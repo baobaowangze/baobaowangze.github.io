@@ -36,6 +36,36 @@
             color: white;
             animation: bounce 1s infinite;
         }
+        .couplet {
+            position: absolute;
+            font-size: 1.5em;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            white-space: nowrap;
+            display: none;
+            animation: flyIn 1s forwards;
+        }
+        .couplet.vertical {
+            writing-mode: vertical-rl;
+            transform-origin: top right;
+        }
+        #couplet-top {
+            top: 40px;
+            animation: flyInTop 1s forwards;
+        }
+        #couplet-left {
+            left: 60px;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: flyInLeft 1s forwards;
+        }
+        #couplet-right {
+            right: 60px;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: flyInRight 1s forwards;
+        }
         @keyframes flyIn {
             from {
                 transform: translateY(-100%);
@@ -46,6 +76,66 @@
                 opacity: 1;
             }
         }
+        @keyframes flyInTop {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        @keyframes flyInLeft {
+            from {
+                transform: translateX(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes flyInRight {
+            from {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes flyOutTop {
+            from {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+        }
+        @keyframes flyOutLeft {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(-50px);
+                opacity: 0;
+            }
+        }
+        @keyframes flyOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+        }
         @keyframes bounce {
             0%, 100% {
                 transform: translateY(0);
@@ -54,79 +144,120 @@
                 transform: translateY(-10px);
             }
         }
+        .approval {
+            display: none;
+            font-size: 1.5em;
+            margin-top: 20px;
+            cursor: pointer;
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+            animation: bounce 1s infinite;
+        }
+        .approval-message {
+            position: absolute;
+            font-size: 1.2em;
+            color: yellow;
+            animation: floatUp 1s forwards;
+            opacity: 0;
+        }
+        @keyframes floatUp {
+            from {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="message" id="message1">My name is Song ZhiLin</div>
+    <div class="message" id="message1">My name is Zhang Qing</div>
     <div class="button" id="button1">&#9660;</div>
 
-    <div class="message" id="message2">我的中文名叫宋智林，也叫一拳超人。我的铁拳被很多人所熟知。</div>
+    <div class="message" id="message2">我的中文名叫张青，是一位和蔼的英语老师</div>
     <div class="button" id="button2">&#9660;</div>
 
-    <div class="message" id="message3">我是一名政治老师，是一名负责任的老师，而且是一位善良的老师。</div>
+    <div class="message" id="message3">我是一名英语老师，是一名负责任的老师。</div>
+
+    <div class="couplet vertical" id="couplet-left">课室引领开卷有益，桃李满园结硕果</div>
+    <div class="couplet vertical" id="couplet-right">教坛耕耘传道授业，润物无声浸心田</div>
+    <div class="couplet" id="couplet-top">师恩浩荡</div>
+
+    <div class="approval" id="approval-button">我的俩只爪爪都认同张老师是最好的英语老师</div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            const accessCode = prompt("请输入访问码");
-            if (accessCode === "ZQ") {
-                const message1 = document.getElementById("message1");
-                const button1 = document.getElementById("button1");
-                message1.innerHTML = "My name is Zhang Qing";
-                message1.style.display = "block";
-                button1.style.display = "block";
+            const message1 = document.getElementById("message1");
+            const button1 = document.getElementById("button1");
+            message1.style.display = "block";
+            button1.style.display = "block";
 
-                button1.addEventListener("click", function() {
-                    message1.style.display = "none";
-                    button1.style.display = "none";
+            button1.addEventListener("click", function() {
+                message1.style.display = "none";
+                button1.style.display = "none";
 
-                    const message2 = document.getElementById("message2");
-                    const button2 = document.getElementById("button2");
-                    message2.innerHTML = "我的中文名叫张青，是位和蔼的英语老师";
-                    message2.style.display = "block";
-                    button2.style.display = "block";
-                });
+                const message2 = document.getElementById("message2");
+                const button2 = document.getElementById("button2");
+                message2.style.display = "block";
+                button2.style.display = "block";
+            });
 
-                button2.addEventListener("click", function() {
-                    const message2 = document.getElementById("message2");
-                    const button2 = document.getElementById("button2");
-                    message2.style.display = "none";
-                    button2.style.display = "none";
+            button2.addEventListener("click", function() {
+                const message2 = document.getElementById("message2");
+                const button2 = document.getElementById("button2");
+                message2.style.display = "none";
+                button2.style.display = "none";
 
-                    const message3 = document.getElementById("message3");
-                    message3.innerHTML = "我是一名英语老师，是一名负责任的老师，而且是一位善良的老师。";
-                    message3.style.display = "block";
-                });
-            } else if (accessCode === "SZL") {
-                const message1 = document.getElementById("message1");
-                const button1 = document.getElementById("button1");
-                message1.style.display = "block";
-                button1.style.display = "block";
-
-                button1.addEventListener("click", function() {
-                    message1.style.display = "none";
-                    button1.style.display = "none";
-
-                    const message2 = document.getElementById("message2");
-                    const button2 = document.getElementById("button2");
-                    message2.style.display = "block";
-                    button2.style.display = "block";
-                });
-
-                button2.addEventListener("click", function() {
-                    const message2 = document.getElementById("message2");
-                    const button2 = document.getElementById("button2");
-                    message2.style.display = "none";
-                    button2.style.display = "none";
-
-                    const message3 = document.getElementById("message3");
-                    message3.innerHTML = "我是一名政治老师，是一名负责任的老师，而且是一位善良的老师。";
-                    message3.style.display = "block";
-                });
-            } else {
                 const message3 = document.getElementById("message3");
                 message3.style.display = "block";
-            }
+
+                // Show couplets in sequence
+                setTimeout(function() {
+                    document.getElementById("couplet-left").style.display = "block";
+                }, 1000);
+
+                setTimeout(function() {
+                    document.getElementById("couplet-right").style.display = "block";
+                }, 2000);
+
+                setTimeout(function() {
+                    document.getElementById("couplet-top").style.display = "block";
+                }, 3000);
+
+                // Hide couplets in sequence after 8 seconds
+                setTimeout(function() {
+                    document.getElementById("couplet-left").style.animation = "flyOutLeft 1s forwards";
+                }, 3500);
+                setTimeout(function() {
+                    document.getElementById("couplet-right").style.animation = "flyOutRight 1s forwards";
+                }, 3500);
+                setTimeout(function() {
+                    document.getElementById("couplet-top").style.animation = "flyOutTop 1s forwards";
+                }, 4000);
+
+                setTimeout(function() {
+                    document.getElementById("approval-button").style.display = "block";
+                }, 5000);
+            });
+
+            const approvalButton = document.getElementById("approval-button");
+            approvalButton.addEventListener("click", function() {
+                const approvalMessage = document.createElement("div");
+                approvalMessage.className = "approval-message";
+                approvalMessage.textContent = "认同+1";
+                approvalMessage.style.top = approvalButton.offsetTop + "px";
+                approvalMessage.style.left = approvalButton.offsetLeft + approvalButton.offsetWidth / 2 - 30 + "px";
+                document.body.appendChild(approvalMessage);
+
+                setTimeout(function() {
+                    approvalMessage.remove();
+                }, 1000);
+            });
         });
     </script>
 
