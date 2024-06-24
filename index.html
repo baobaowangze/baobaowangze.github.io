@@ -68,31 +68,65 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Show the first message
-            const message1 = document.getElementById("message1");
-            const button1 = document.getElementById("button1");
-            message1.style.display = "block";
-            button1.style.display = "block";
+            const accessCode = prompt("请输入访问码");
+            if (accessCode === "ZQ") {
+                const message1 = document.getElementById("message1");
+                const button1 = document.getElementById("button1");
+                message1.innerHTML = "My name is Zhang Qing";
+                message1.style.display = "block";
+                button1.style.display = "block";
 
-            button1.addEventListener("click", function() {
-                message1.style.display = "none";
-                button1.style.display = "none";
+                button1.addEventListener("click", function() {
+                    message1.style.display = "none";
+                    button1.style.display = "none";
 
-                const message2 = document.getElementById("message2");
-                const button2 = document.getElementById("button2");
-                message2.style.display = "block";
-                button2.style.display = "block";
-            });
+                    const message2 = document.getElementById("message2");
+                    const button2 = document.getElementById("button2");
+                    message2.innerHTML = "我的中文名叫张青，是位和蔼的英语老师";
+                    message2.style.display = "block";
+                    button2.style.display = "block";
+                });
 
-            button2.addEventListener("click", function() {
-                const message2 = document.getElementById("message2");
-                const button2 = document.getElementById("button2");
-                message2.style.display = "none";
-                button2.style.display = "none";
+                button2.addEventListener("click", function() {
+                    const message2 = document.getElementById("message2");
+                    const button2 = document.getElementById("button2");
+                    message2.style.display = "none";
+                    button2.style.display = "none";
 
+                    const message3 = document.getElementById("message3");
+                    message3.innerHTML = "我是一名英语老师，是一名负责任的老师，而且是一位善良的老师。";
+                    message3.style.display = "block";
+                });
+            } else if (accessCode === "SZL") {
+                const message1 = document.getElementById("message1");
+                const button1 = document.getElementById("button1");
+                message1.style.display = "block";
+                button1.style.display = "block";
+
+                button1.addEventListener("click", function() {
+                    message1.style.display = "none";
+                    button1.style.display = "none";
+
+                    const message2 = document.getElementById("message2");
+                    const button2 = document.getElementById("button2");
+                    message2.style.display = "block";
+                    button2.style.display = "block";
+                });
+
+                button2.addEventListener("click", function() {
+                    const message2 = document.getElementById("message2");
+                    const button2 = document.getElementById("button2");
+                    message2.style.display = "none";
+                    button2.style.display = "none";
+
+                    const message3 = document.getElementById("message3");
+                    message3.innerHTML = "我是一名政治老师，是一名负责任的老师，而且是一位善良的老师。";
+                    message3.style.display = "block";
+                });
+            } else {
                 const message3 = document.getElementById("message3");
                 message3.style.display = "block";
-            });
+            }
         });
     </script>
 
