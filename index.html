@@ -1,265 +1,339 @@
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Gift to My Political Science Teacher</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            background: linear-gradient(to bottom right, #ff7e5f, #feb47b);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: white;
-        }
-        .message {
-            display: none;
-            font-size: 2em;
-            margin: 20px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            animation: flyIn 1s forwards;
-            max-width: 80%;
-        }
-        .button {
-            display: none;
-            margin: 20px auto;
-            cursor: pointer;
-            font-size: 2em;
-            color: white;
-            animation: bounce 1s infinite;
-        }
-        .couplet {
-            position: absolute;
-            font-size: 1.5em;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 10px;
-            white-space: nowrap;
-            display: none;
-            animation: flyIn 1s forwards;
-        }
-        .couplet.vertical {
-            writing-mode: vertical-rl;
-            transform-origin: top right;
-        }
-        #couplet-top {
-            top: 40px;
-            animation: flyInTop 1s forwards;
-        }
-        #couplet-left {
-            left: 60px;
-            top: 50%;
-            transform: translateY(-50%);
-            animation: flyInLeft 1s forwards;
-        }
-        #couplet-right {
-            right: 60px;
-            top: 50%;
-            transform: translateY(-50%);
-            animation: flyInRight 1s forwards;
-        }
-        @keyframes flyIn {
-            from {
-                transform: translateY(-100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-        @keyframes flyInTop {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-        @keyframes flyInLeft {
-            from {
-                transform: translateX(-50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        @keyframes flyInRight {
-            from {
-                transform: translateX(50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        @keyframes flyOutTop {
-            from {
-                transform: translateY(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-        }
-        @keyframes flyOutLeft {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(-50px);
-                opacity: 0;
-            }
-        }
-        @keyframes flyOutRight {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(50px);
-                opacity: 0;
-            }
-        }
-        @keyframes bounce {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-        .approval {
-            display: none;
-            font-size: 1.5em;
-            margin-top: 20px;
-            cursor: pointer;
-            color: white;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px 20px;
-            border-radius: 10px;
-            animation: bounce 1s infinite;
-        }
-        .approval-message {
-            position: absolute;
-            font-size: 1.2em;
-            color: yellow;
-            animation: floatUp 1s forwards;
-            opacity: 0;
-        }
-        @keyframes floatUp {
-            from {
-                transform: translateY(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateY(-30px);
-                opacity: 0;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat with AI</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background-color: #f4f4f9;
+    }
+    #header {
+      width: 100%;
+      padding: 20px;
+      text-align: center;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    #chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 98%;
+      background: #ffffff;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    #chat-box {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      background-color: #f1f1f1;
+    }
+    .user, .bot {
+      display: flex;
+      align-items: flex-end;
+    }
+    .user {
+      justify-content: flex-end;
+    }
+    .bot {
+      justify-content: flex-start;
+    }
+    .message {
+      display: inline-block;
+      padding: 15px;
+      border-radius: 15px;
+      max-width: 60%;
+      word-break: break-word;
+      font-size: 16px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .bot .message {
+      background-color: #e0e0e0;
+      border-bottom-left-radius: 0;
+    }
+    .user .message {
+      background-color: #4CAF50;
+      color: white;
+      border-bottom-right-radius: 0;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+    .error .message {
+      background-color: #ffebee;
+    }
+    .error .error {
+      background-color: #ffcdd2;
+    }
+    .error .error-message {
+      color: #b71c1c;
+    }
+    .error .error strong {
+      font-size: 18px;
+    }
+    #input-container {
+      display: flex;
+      border-top: 1px solid #ccc;
+      padding: 15px;
+      background-color: #fff;
+      align-items: center;
+    }
+    #user-input {
+      flex: 1;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    button {
+      padding: 15px 20px;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #delete-btn {
+      background-color: red;
+      color: white;
+      margin-left: 10px;
+    }
+    #delete-btn:hover {
+      background-color: darkred;
+    }
+    #model-selector {
+      display: flex;
+      align-items: center;
+      margin-left: 10px;
+    }
+    #model-selector label {
+      margin-right: 10px;
+      font-size: 16px;
+    }
+    #model-options {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #welcome-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    #welcome-message {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 18px;
+      max-width: 80%;
+    }
+    #welcome-message button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    #welcome-message button:hover {
+      background-color: #45a049;
+    }
+  </style>
 </head>
 <body>
+  <div id="header">WWZ-AI</div>
+  <div id="chat-container">
+    <div id="chat-box"></div>
+    <div id="input-container">
+      <input type="text" id="user-input" placeholder="Type a message">
+      <button onclick="sendMessage()">Send</button>
+      <button id="delete-btn" onclick="deleteMessages()">Delete</button>
+      <div id="model-selector">
+        <label for="model-options">Model:</label>
+        <select id="model-options" onchange="changeModel()">
+          <option value="claude-3_5-sonnet">claude-3_5-sonnet</option>
+          <option value="claude-3-opus">claude-3-opus</option>
+          <option value="claude-3-sonnet">claude-3-sonnet</option>
+          <option value="claude-3-haiku">claude-3-haiku</option>
+        </select>
+      </div>
+    </div>
+  </div>
 
-    <div class="message" id="message1">My name is Zhang Qing</div>
-    <div class="button" id="button1">&#9660;</div>
+  <div id="welcome-modal">
+    <div id="welcome-message">
+      <p>该网站为AI问答网站，可以向AI提问，AI会耐心进行解答</p>
+      <p>欢迎进入官方QQ交流群：715434216<br>您的进群便是对我最大的支持</p>
+      <p>PS：如遇到长时间不回复，请重试</p>
+      <button onclick="closeModal()">确认</button>
+    </div>
+  </div>
 
-    <div class="message" id="message2">我的中文名叫张青，是一位和蔼的英语老师</div>
-    <div class="button" id="button2">&#9660;</div>
+  <script>
+    var conversation = [];
+    var selectedModel = "claude-3_5-sonnet";
+    var sequence = 1;
 
-    <div class="message" id="message3">我是一名英语老师，是一名负责任的老师。</div>
-
-    <div class="couplet vertical" id="couplet-left">课室引领开卷有益，桃李满园结硕果</div>
-    <div class="couplet vertical" id="couplet-right">教坛耕耘传道授业，润物无声浸心田</div>
-    <div class="couplet" id="couplet-top">师恩浩荡</div>
-
-    <div class="approval" id="approval-button">我的俩只爪爪都认同张老师是最好的英语老师</div>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const message1 = document.getElementById("message1");
-            const button1 = document.getElementById("button1");
-            message1.style.display = "block";
-            button1.style.display = "block";
-
-            button1.addEventListener("click", function() {
-                message1.style.display = "none";
-                button1.style.display = "none";
-
-                const message2 = document.getElementById("message2");
-                const button2 = document.getElementById("button2");
-                message2.style.display = "block";
-                button2.style.display = "block";
+    function sendMessage() {
+      var userInput = document.getElementById("user-input").value.trim();
+      if (userInput === '') return;
+      appendMessage("You", userInput);
+      conversation.push({
+        role: "user",
+        content: userInput,
+        sequence: sequence,
+      });
+      sequence++;
+      var requestOptions = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer sk-4SOUSFmaXEuihAnZ6348862681904773B4470b29DeC6E051",  
+        },
+        body: JSON.stringify({
+          model: selectedModel,
+          messages: conversation,
+          stream: true,
+          temperature: 0.5,
+          max_tokens: 4000,
+        }),
+      };    
+      fetch("https://api.smnet.asia/v1/chat/completions", requestOptions)
+        .then(response => {
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let botResponse = '';
+          appendMessage("AI", ""); 
+          function read() {
+            reader.read().then(({ done, value }) => {
+              if (done) {
+                conversation.push({
+                  role: "assistant",
+                  content: botResponse,
+                });
+                return;
+              }
+              const chunk = decoder.decode(value, { stream: true });
+              const lines = chunk.split('\n');
+              for (let line of lines) {
+                if (line.trim().startsWith('data: ')) {
+                  const json = JSON.parse(line.slice(6));
+                  if (json.choices && json.choices.length > 0 && json.choices[0].delta && json.choices[0].delta.content) {
+                    botResponse += json.choices[0].delta.content;
+                    updateLatestMessage(botResponse);
+                  }
+                }
+              }
+              read();
             });
-
-            button2.addEventListener("click", function() {
-                const message2 = document.getElementById("message2");
-                const button2 = document.getElementById("button2");
-                message2.style.display = "none";
-                button2.style.display = "none";
-
-                const message3 = document.getElementById("message3");
-                message3.style.display = "block";
-
-                // Show couplets in sequence
-                setTimeout(function() {
-                    document.getElementById("couplet-left").style.display = "block";
-                }, 1000);
-
-                setTimeout(function() {
-                    document.getElementById("couplet-right").style.display = "block";
-                }, 2000);
-
-                setTimeout(function() {
-                    document.getElementById("couplet-top").style.display = "block";
-                }, 3000);
-
-                // Hide couplets in sequence after 8 seconds
-                setTimeout(function() {
-                    document.getElementById("couplet-left").style.animation = "flyOutLeft 1s forwards";
-                }, 3500);
-                setTimeout(function() {
-                    document.getElementById("couplet-right").style.animation = "flyOutRight 1s forwards";
-                }, 3500);
-                setTimeout(function() {
-                    document.getElementById("couplet-top").style.animation = "flyOutTop 1s forwards";
-                }, 4000);
-
-                setTimeout(function() {
-                    document.getElementById("approval-button").style.display = "block";
-                }, 5000);
-            });
-
-            const approvalButton = document.getElementById("approval-button");
-            approvalButton.addEventListener("click", function() {
-                const approvalMessage = document.createElement("div");
-                approvalMessage.className = "approval-message";
-                approvalMessage.textContent = "认同+1";
-                approvalMessage.style.top = approvalButton.offsetTop + "px";
-                approvalMessage.style.left = approvalButton.offsetLeft + approvalButton.offsetWidth / 2 - 30 + "px";
-                document.body.appendChild(approvalMessage);
-
-                setTimeout(function() {
-                    approvalMessage.remove();
-                }, 1000);
-            });
+          }
+          read();
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          appendErrorMessage("Error: " + error);
         });
-    </script>
+      document.getElementById("user-input").value = "";
+    }
 
+    function updateLatestMessage(text) {
+      var chatBox = document.getElementById("chat-box");
+      var latestMessage = chatBox.querySelector(".bot:last-child .message");
+      if (latestMessage) {
+        latestMessage.innerHTML = marked.parse(text);
+      }
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendMessage(sender, message) {
+      var chatBox = document.getElementById("chat-box");
+      var messageDiv = document.createElement("div");
+      messageDiv.className = sender === "You" ? "user" : "bot";
+      var messageContent = `<div class="message">${sender === "You" ? message : marked.parse(message)}</div>`;
+      messageDiv.innerHTML = messageContent;
+      chatBox.appendChild(messageDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendErrorMessage(message) {
+      var chatBox = document.getElementById("chat-box");
+      var errorDiv = document.createElement("div");
+      errorDiv.className = "error";
+      errorDiv.innerHTML = "<strong>Error:</strong> " + message;
+      chatBox.appendChild(errorDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function deleteMessages() {
+      var chatBox = document.getElementById("chat-box");
+      chatBox.innerHTML = '';
+      conversation = [];
+      sequence = 1;
+    }
+
+    function changeModel() {
+      selectedModel = document.getElementById('model-options').value;
+    }
+
+    function closeModal() {
+      var modal = document.getElementById('welcome-modal');
+      modal.style.display = 'none';
+    }
+
+    document.getElementById("user-input").addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+
+    window.onload = function() {
+      var modal = document.getElementById('welcome-modal');
+      modal.style.display = 'flex';
+    };
+  </script>
 </body>
 </html>
