@@ -1,339 +1,116 @@
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat with AI</title>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      background-color: #f4f4f9;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>显示视频</title>
+<style>
+    body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
     }
-    #header {
-      width: 100%;
-      padding: 20px;
-      text-align: center;
-      background-color: #4CAF50;
-      color: white;
-      font-size: 24px;
-      font-weight: bold;
+    #overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
-    #chat-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      max-width: 98%;
-      background: #ffffff;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    #loadingBox {
+        background-color: white;
+        padding: 20px 40px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        font-size: 24px;
+        color: #333;
     }
-    #chat-box {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      background-color: #f1f1f1;
+    #videoContainer {
+        display: none;
+        text-align: center;
     }
-    .user, .bot {
-      display: flex;
-      align-items: flex-end;
+    #loadAnotherButton {
+        margin-top: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        color: white;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
     }
-    .user {
-      justify-content: flex-end;
+    #loadAnotherButton:hover {
+        background-color: #0056b3;
     }
-    .bot {
-      justify-content: flex-start;
+    video {
+        width: 100%;
+        max-width: 800px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
     }
-    .message {
-      display: inline-block;
-      padding: 15px;
-      border-radius: 15px;
-      max-width: 60%;
-      word-break: break-word;
-      font-size: 16px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-    .bot .message {
-      background-color: #e0e0e0;
-      border-bottom-left-radius: 0;
-    }
-    .user .message {
-      background-color: #4CAF50;
-      color: white;
-      border-bottom-right-radius: 0;
-    }
-    .error {
-      color: red;
-      font-weight: bold;
-    }
-    .error .message {
-      background-color: #ffebee;
-    }
-    .error .error {
-      background-color: #ffcdd2;
-    }
-    .error .error-message {
-      color: #b71c1c;
-    }
-    .error .error strong {
-      font-size: 18px;
-    }
-    #input-container {
-      display: flex;
-      border-top: 1px solid #ccc;
-      padding: 15px;
-      background-color: #fff;
-      align-items: center;
-    }
-    #user-input {
-      flex: 1;
-      padding: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 16px;
-      margin-right: 10px;
-    }
-    button {
-      padding: 15px 20px;
-      border: none;
-      background-color: #4CAF50;
-      color: white;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    #delete-btn {
-      background-color: red;
-      color: white;
-      margin-left: 10px;
-    }
-    #delete-btn:hover {
-      background-color: darkred;
-    }
-    #model-selector {
-      display: flex;
-      align-items: center;
-      margin-left: 10px;
-    }
-    #model-selector label {
-      margin-right: 10px;
-      font-size: 16px;
-    }
-    #model-options {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    #welcome-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-    #welcome-message {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      text-align: center;
-      font-size: 18px;
-      max-width: 80%;
-    }
-    #welcome-message button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      border: none;
-      background-color: #4CAF50;
-      color: white;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    #welcome-message button:hover {
-      background-color: #45a049;
-    }
-  </style>
+</style>
 </head>
 <body>
-  <div id="header">WWZ-AI</div>
-  <div id="chat-container">
-    <div id="chat-box"></div>
-    <div id="input-container">
-      <input type="text" id="user-input" placeholder="Type a message">
-      <button onclick="sendMessage()">Send</button>
-      <button id="delete-btn" onclick="deleteMessages()">Delete</button>
-      <div id="model-selector">
-        <label for="model-options">Model:</label>
-        <select id="model-options" onchange="changeModel()">
-          <option value="claude-3_5-sonnet">claude-3_5-sonnet</option>
-          <option value="claude-3-opus">claude-3-opus</option>
-          <option value="claude-3-sonnet">claude-3-sonnet</option>
-          <option value="claude-3-haiku">claude-3-haiku</option>
-        </select>
-      </div>
-    </div>
-  </div>
 
-  <div id="welcome-modal">
-    <div id="welcome-message">
-      <p>该网站为AI问答网站，可以向AI提问，AI会耐心进行解答</p>
-      <p>欢迎进入官方QQ交流群：715434216<br>您的进群便是对我最大的支持</p>
-      <p>PS：如遇到长时间不回复，请重试</p>
-      <button onclick="closeModal()">确认</button>
-    </div>
-  </div>
+<div id="overlay">
+    <div id="loadingBox">视频正在加载...</div>
+</div>
+<div id="videoContainer">
+    <video id="videoElement" controls></video>
+    <button id="loadAnotherButton">再来一个</button>
+</div>
 
-  <script>
-    var conversation = [];
-    var selectedModel = "claude-3_5-sonnet";
-    var sequence = 1;
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        loadVideo();
 
-    function sendMessage() {
-      var userInput = document.getElementById("user-input").value.trim();
-      if (userInput === '') return;
-      appendMessage("You", userInput);
-      conversation.push({
-        role: "user",
-        content: userInput,
-        sequence: sequence,
-      });
-      sequence++;
-      var requestOptions = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer sk-4SOUSFmaXEuihAnZ6348862681904773B4470b29DeC6E051",  
-        },
-        body: JSON.stringify({
-          model: selectedModel,
-          messages: conversation,
-          stream: true,
-          temperature: 0.5,
-          max_tokens: 4000,
-        }),
-      };    
-      fetch("https://api.smnet.asia/v1/chat/completions", requestOptions)
-        .then(response => {
-          const reader = response.body.getReader();
-          const decoder = new TextDecoder();
-          let botResponse = '';
-          appendMessage("AI", ""); 
-          function read() {
-            reader.read().then(({ done, value }) => {
-              if (done) {
-                conversation.push({
-                  role: "assistant",
-                  content: botResponse,
-                });
-                return;
-              }
-              const chunk = decoder.decode(value, { stream: true });
-              const lines = chunk.split('\n');
-              for (let line of lines) {
-                if (line.trim().startsWith('data: ')) {
-                  const json = JSON.parse(line.slice(6));
-                  if (json.choices && json.choices.length > 0 && json.choices[0].delta && json.choices[0].delta.content) {
-                    botResponse += json.choices[0].delta.content;
-                    updateLatestMessage(botResponse);
-                  }
-                }
-              }
-              read();
-            });
-          }
-          read();
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          appendErrorMessage("Error: " + error);
+        document.getElementById('loadAnotherButton').addEventListener('click', function() {
+            loadVideo();
         });
-      document.getElementById("user-input").value = "";
-    }
-
-    function updateLatestMessage(text) {
-      var chatBox = document.getElementById("chat-box");
-      var latestMessage = chatBox.querySelector(".bot:last-child .message");
-      if (latestMessage) {
-        latestMessage.innerHTML = marked.parse(text);
-      }
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    function appendMessage(sender, message) {
-      var chatBox = document.getElementById("chat-box");
-      var messageDiv = document.createElement("div");
-      messageDiv.className = sender === "You" ? "user" : "bot";
-      var messageContent = `<div class="message">${sender === "You" ? message : marked.parse(message)}</div>`;
-      messageDiv.innerHTML = messageContent;
-      chatBox.appendChild(messageDiv);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    function appendErrorMessage(message) {
-      var chatBox = document.getElementById("chat-box");
-      var errorDiv = document.createElement("div");
-      errorDiv.className = "error";
-      errorDiv.innerHTML = "<strong>Error:</strong> " + message;
-      chatBox.appendChild(errorDiv);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    function deleteMessages() {
-      var chatBox = document.getElementById("chat-box");
-      chatBox.innerHTML = '';
-      conversation = [];
-      sequence = 1;
-    }
-
-    function changeModel() {
-      selectedModel = document.getElementById('model-options').value;
-    }
-
-    function closeModal() {
-      var modal = document.getElementById('welcome-modal');
-      modal.style.display = 'none';
-    }
-
-    document.getElementById("user-input").addEventListener("keydown", function (event) {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        sendMessage();
-      }
     });
 
-    window.onload = function() {
-      var modal = document.getElementById('welcome-modal');
-      modal.style.display = 'flex';
-    };
-  </script>
+    function loadVideo() {
+
+        document.getElementById('overlay').style.display = 'flex';
+        document.getElementById('videoContainer').style.display = 'none';
+
+
+        fetch('https://api.kuleu.com/api/xjj?type=json')
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    const videoUrl = data.video;
+                    displayVideo(videoUrl);
+                } else {
+                    console.error('获取视频失败:', data.msg);
+                }
+            })
+            .catch(error => {
+                console.error('请求接口失败:', error);
+            });
+    }
+
+    function displayVideo(videoUrl) {
+        const videoElement = document.getElementById('videoElement');
+        videoElement.src = videoUrl;
+
+
+        videoElement.onloadeddata = function() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('videoContainer').style.display = 'block';
+        };
+    }
+</script>
+
 </body>
 </html>
