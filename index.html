@@ -1,116 +1,162 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>显示视频</title>
-<style>
-    body {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background-color: #f0f0f0;
-    }
-    #overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    #loadingBox {
-        background-color: white;
-        padding: 20px 40px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        font-size: 24px;
-        color: #333;
-    }
-    #videoContainer {
-        display: none;
-        text-align: center;
-    }
-    #loadAnotherButton {
-        margin-top: 10px;
-        padding: 10px 20px;
-        font-size: 16px;
-        color: white;
-        background-color: #007bff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-    #loadAnotherButton:hover {
-        background-color: #0056b3;
-    }
-    video {
-        width: 100%;
-        max-width: 800px;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-    }
-</style>
+    <title>WUWANGZE-MAP</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+    <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            height: 100%; /* Ensure the map takes up the full height */
+            width: 100%; /* Ensure the map takes up the full width */
+        }
+        .modal {
+            display: block; 
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+        }
+        .modal-content h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .modal-content button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .modal-content button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
+    <div id="map"></div>
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <h1>干翻高德地图 手撕百度地图 WWZ地图全球最强</h1>
+            <button id="closeBtn">我赞同</button>
+        </div>
+    </div>
+    <div id="myModal2" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h1>受网络因素影响，地图有时加载较为缓慢，请见谅，缩放屏幕可快速查看地图瓦片图，并且，建议使用卫星图，加载更迅速</h1>
+            <button id="closeBtn2">我知道了</button>
+        </div>
+    </div>
 
-<div id="overlay">
-    <div id="loadingBox">视频正在加载...</div>
-</div>
-<div id="videoContainer">
-    <video id="videoElement" controls></video>
-    <button id="loadAnotherButton">再来一个</button>
-</div>
+    <script>
+        var map = L.map('map').setView([51.505, -0.09], 13);
+        var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> 贡献者'
+        }).addTo(map);
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        loadVideo();
-
-        document.getElementById('loadAnotherButton').addEventListener('click', function() {
-            loadVideo();
+        var satelliteLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> 贡献者'
         });
-    });
-
-    function loadVideo() {
-
-        document.getElementById('overlay').style.display = 'flex';
-        document.getElementById('videoContainer').style.display = 'none';
-
-
-        fetch('https://api.kuleu.com/api/xjj?type=json')
-            .then(response => response.json())
-            .then(data => {
-                if (data.code === 200) {
-                    const videoUrl = data.video;
-                    displayVideo(videoUrl);
-                } else {
-                    console.error('获取视频失败:', data.msg);
-                }
-            })
-            .catch(error => {
-                console.error('请求接口失败:', error);
-            });
-    }
-
-    function displayVideo(videoUrl) {
-        const videoElement = document.getElementById('videoElement');
-        videoElement.src = videoUrl;
-
-
-        videoElement.onloadeddata = function() {
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('videoContainer').style.display = 'block';
+        var baseMaps = {
+            "OpenStreetMap": osmLayer,
+            "卫星图": satelliteLayer
         };
-    }
-</script>
+        L.control.layers(baseMaps).addTo(map);
+        var marker = L.marker([51.5, -0.09]).addTo(map)
+            .bindPopup('一个漂亮的 CSS.<br> biubiu.')
+            .openPopup();
+        var circle = L.circle([51.508, -0.11], {
+            color: 'red',
+            fillColor: '#f03',
+            fillOpacity: 0.5,
+            radius: 500
+        }).addTo(map)
+            .bindPopup('我是一个圆形.');
+        var polygon = L.polygon([
+            [51.509, -0.08],
+            [51.503, -0.06],
+            [51.51, -0.047]
+        ]).addTo(map)
+            .bindPopup('我是一个多边形.');
+        var rectangle = L.rectangle([[51.49, -0.1], [51.5, -0.05]], {color: "blue", weight: 1})
+            .addTo(map)
+            .bindPopup('我是一个矩形.');
+        var polyline = L.polyline([
+            [51.506, -0.08],
+            [51.502, -0.06],
+            [51.507, -0.047]
+        ]).addTo(map)
+            .bindPopup('我是一个折线.');
+        L.control.scale().addTo(map);
+        L.control.zoom({
+            position: 'topright'
+        }).addTo(map);
+        var geojsonFeature = {
+            "type": "Feature",
+            "properties": {
+                "name": "库尔斯球场",
+                "amenity": "棒球场",
+                "popupContent": "这里是洛矶队比赛的地方！"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-104.99404, 39.75621]
+            }
+        };
 
+        L.geoJSON(geojsonFeature).addTo(map);
+        var customIcon = L.icon({
+            iconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-red.png',
+            shadowUrl: 'https://leafletjs.com/examples/custom-icons/leaf-shadow.png',
+            iconSize: [38, 95],
+            shadowSize: [50, 64],
+            iconAnchor: [22, 94],
+            shadowAnchor: [4, 62],
+            popupAnchor: [-3, -76]
+        });
+
+        L.marker([51.5, -0.09], {icon: customIcon}).addTo(map)
+            .bindPopup('我是一个自定义图标.');
+        L.control.locate({
+            position: 'topright',
+            strings: {
+                title: "显示我的位置"
+            }
+        }).addTo(map);
+        document.getElementById('closeBtn').onclick = function() {
+            document.getElementById('myModal').style.display = 'none';
+            document.getElementById('myModal2').style.display = 'flex'; // 使用 flex 确保相同位置
+        };
+        document.getElementById('closeBtn2').onclick = function() {
+            document.getElementById('myModal2').style.display = 'none';
+        };
+    </script>
 </body>
 </html>
