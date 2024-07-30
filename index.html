@@ -94,6 +94,7 @@
     <div class="controls">
         <button onclick="restartGame()">重置</button>
         <div class="max-tile" id="max-tile">最大数字: 0</div>
+        <button onclick="downloadGame()">离线玩</button>
     </div>
     <div class="popup" id="popup">
         <p id="popup-message"></p>
@@ -282,6 +283,17 @@
             updateBoard();
             addRandomTile();
             addRandomTile();
+        }
+
+        function downloadGame() {
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '2048_game.html';
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         function initGame() {
