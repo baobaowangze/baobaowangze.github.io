@@ -1,162 +1,296 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>WUWANGZE-MAP</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
-    <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WUWANGZE 2048 GAME</title>
     <style>
-        html, body {
-            height: 100%;
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             margin: 0;
-            padding: 0;
+            background-color: #ffebcd;
+            overflow: hidden;
         }
-        #map {
-            height: 100%; /* Ensure the map takes up the full height */
-            width: 100%; /* Ensure the map takes up the full width */
+        .game-container {
+            position: relative;
+            width: 90vmin;
+            height: 90vmin;
+            background-color: #ffcc99;
+            border-radius: 20px;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
-        .modal {
-            display: block; 
-            position: fixed;
-            z-index: 9999;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.7);
+        .tile {
+            position: absolute;
+            width: 20vmin;
+            height: 20vmin;
+            background-color: #fff8dc;
+            border-radius: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
+            font-size: 6vmin;
+            font-weight: bold;
+            color: #776e65;
+            transition: transform 0.2s;
         }
-        .modal-content {
+        .tile[data-value="2"] { background-color: #ffebcd; }
+        .tile[data-value="4"] { background-color: #ffdead; }
+        .tile[data-value="8"] { background-color: #ffb6c1; color: #f9f6f2; }
+        .tile[data-value="16"] { background-color: #ff69b4; color: #f9f6f2; }
+        .tile[data-value="32"] { background-color: #ff1493; color: #f9f6f2; }
+        .tile[data-value="64"] { background-color: #db7093; color: #f9f6f2; }
+        .tile[data-value="128"] { background-color: #ff6347; color: #f9f6f2; }
+        .tile[data-value="256"] { background-color: #ff4500; color: #f9f6f2; }
+        .tile[data-value="512"] { background-color: #ff8c00; color: #f9f6f2; }
+        .tile[data-value="1024"] { background-color: #ffd700; color: #f9f6f2; }
+        .tile[data-value="2048"] { background-color: #ffff00; color: #f9f6f2; }
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             background-color: #fff;
-            padding: 30px;
+            padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
             text-align: center;
-            width: 90%;
-            max-width: 500px;
+            display: none;
         }
-        .modal-content h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        .modal-content button {
-            padding: 10px 20px;
-            font-size: 18px;
-            background-color: #007bff;
-            color: white;
+        .popup button {
+            margin-top: 10px;
+            padding: 5px 10px;
             border: none;
+            background-color: #ffcc99;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
         }
-        .modal-content button:hover {
-            background-color: #0056b3;
+        .controls {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            width: 90vmin;
+        }
+        .controls button {
+            padding: 10px;
+            border: none;
+            background-color: #ffcc99;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .max-tile {
+            font-size: 1.5em;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div id="map"></div>
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <h1>干翻高德地图 手撕百度地图 WWZ地图全球最强</h1>
-            <button id="closeBtn">我赞同</button>
-        </div>
+    <div class="game-container" id="game-container"></div>
+    <div class="controls">
+        <button onclick="restartGame()">重置</button>
+        <div class="max-tile" id="max-tile">最大数字: 0</div>
     </div>
-    <div id="myModal2" class="modal" style="display:none;">
-        <div class="modal-content">
-            <h1>受网络因素影响，地图有时加载较为缓慢，请见谅，缩放屏幕可快速查看地图瓦片图，并且，建议使用卫星图，加载更迅速</h1>
-            <button id="closeBtn2">我知道了</button>
-        </div>
+    <div class="popup" id="popup">
+        <p id="popup-message"></p>
+        <button onclick="closePopup()">确定</button>
     </div>
-
     <script>
-        var map = L.map('map').setView([51.505, -0.09], 13);
-        var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> 贡献者'
-        }).addTo(map);
+        const gameContainer = document.getElementById('game-container');
+        const popup = document.getElementById('popup');
+        const popupMessage = document.getElementById('popup-message');
+        const maxTileDisplay = document.getElementById('max-tile');
+        const size = 4;
+        let board = Array(size).fill().map(() => Array(size).fill(0));
+        let maxTile = 0;
 
-        var satelliteLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> 贡献者'
-        });
-        var baseMaps = {
-            "OpenStreetMap": osmLayer,
-            "卫星图": satelliteLayer
-        };
-        L.control.layers(baseMaps).addTo(map);
-        var marker = L.marker([51.5, -0.09]).addTo(map)
-            .bindPopup('一个漂亮的 CSS.<br> biubiu.')
-            .openPopup();
-        var circle = L.circle([51.508, -0.11], {
-            color: 'red',
-            fillColor: '#f03',
-            fillOpacity: 0.5,
-            radius: 500
-        }).addTo(map)
-            .bindPopup('我是一个圆形.');
-        var polygon = L.polygon([
-            [51.509, -0.08],
-            [51.503, -0.06],
-            [51.51, -0.047]
-        ]).addTo(map)
-            .bindPopup('我是一个多边形.');
-        var rectangle = L.rectangle([[51.49, -0.1], [51.5, -0.05]], {color: "blue", weight: 1})
-            .addTo(map)
-            .bindPopup('我是一个矩形.');
-        var polyline = L.polyline([
-            [51.506, -0.08],
-            [51.502, -0.06],
-            [51.507, -0.047]
-        ]).addTo(map)
-            .bindPopup('我是一个折线.');
-        L.control.scale().addTo(map);
-        L.control.zoom({
-            position: 'topright'
-        }).addTo(map);
-        var geojsonFeature = {
-            "type": "Feature",
-            "properties": {
-                "name": "库尔斯球场",
-                "amenity": "棒球场",
-                "popupContent": "这里是洛矶队比赛的地方！"
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [-104.99404, 39.75621]
+        function createTile(value, x, y) {
+            const tile = document.createElement('div');
+            tile.classList.add('tile');
+            tile.dataset.value = value;
+            tile.style.transform = `translate(${x * 22.5}vmin, ${y * 22.5}vmin)`;
+            tile.textContent = value;
+            gameContainer.appendChild(tile);
+        }
+
+        function updateBoard() {
+            gameContainer.innerHTML = '';
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    if (board[y][x] !== 0) {
+                        createTile(board[y][x], x, y);
+                    }
+                }
             }
-        };
+            maxTileDisplay.textContent = `最大数字: ${maxTile}`;
+        }
 
-        L.geoJSON(geojsonFeature).addTo(map);
-        var customIcon = L.icon({
-            iconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-red.png',
-            shadowUrl: 'https://leafletjs.com/examples/custom-icons/leaf-shadow.png',
-            iconSize: [38, 95],
-            shadowSize: [50, 64],
-            iconAnchor: [22, 94],
-            shadowAnchor: [4, 62],
-            popupAnchor: [-3, -76]
-        });
-
-        L.marker([51.5, -0.09], {icon: customIcon}).addTo(map)
-            .bindPopup('我是一个自定义图标.');
-        L.control.locate({
-            position: 'topright',
-            strings: {
-                title: "显示我的位置"
+        function addRandomTile() {
+            let emptyTiles = [];
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    if (board[y][x] === 0) {
+                        emptyTiles.push({ x, y });
+                    }
+                }
             }
-        }).addTo(map);
-        document.getElementById('closeBtn').onclick = function() {
-            document.getElementById('myModal').style.display = 'none';
-            document.getElementById('myModal2').style.display = 'flex'; // 使用 flex 确保相同位置
-        };
-        document.getElementById('closeBtn2').onclick = function() {
-            document.getElementById('myModal2').style.display = 'none';
-        };
+            if (emptyTiles.length > 0) {
+                const { x, y } = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
+                const value = Math.random() < 0.9 ? 2 : 4;
+                board[y][x] = value;
+                updateBoard();
+            } else {
+                showPopup(`游戏结束，最大数字为 ${maxTile}`);
+            }
+        }
+
+        function slide(row) {
+            let arr = row.filter(val => val);
+            let missing = size - arr.length;
+            let zeros = Array(missing).fill(0);
+            arr = zeros.concat(arr);
+            return arr;
+        }
+
+        function combine(row) {
+            for (let i = size - 1; i >= 1; i--) {
+                if (row[i] === row[i - 1]) {
+                    row[i] *= 2;
+                    row[i - 1] = 0;
+                    if (row[i] > maxTile) {
+                        maxTile = row[i];
+                    }
+                }
+            }
+            return row;
+        }
+
+        function move(direction) {
+            let moved = false;
+            for (let i = 0; i < size; i++) {
+                let row;
+                if (direction === 'right' || direction === 'left') {
+                    row = board[i];
+                    if (direction === 'left') row.reverse();
+                } else {
+                    row = board.map(r => r[i]);
+                    if (direction === 'up') row.reverse();
+                }
+
+                const originalRow = [...row];
+                row = slide(row);
+                row = combine(row);
+                row = slide(row);
+
+                if (direction === 'left') row.reverse();
+                if (direction === 'up') row.reverse();
+
+                if (direction === 'right' || direction === 'left') {
+                    board[i] = row;
+                } else {
+                    for (let j = 0; j < size; j++) {
+                        board[j][i] = row[j];
+                    }
+                }
+
+                if (JSON.stringify(originalRow) !== JSON.stringify(row)) {
+                    moved = true;
+                }
+            }
+            if (moved) {
+                addRandomTile();
+            }
+        }
+
+        function setupInput() {
+            let startX, startY;
+            gameContainer.addEventListener('mousedown', (e) => {
+                startX = e.clientX;
+                startY = e.clientY;
+            });
+
+            gameContainer.addEventListener('mouseup', (e) => {
+                const endX = e.clientX;
+                const endY = e.clientY;
+                const dx = endX - startX;
+                const dy = endY - startY;
+
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    if (dx > 0) {
+                        move('right');
+                    } else {
+                        move('left');
+                    }
+                } else {
+                    if (dy > 0) {
+                        move('down');
+                    } else {
+                        move('up');
+                    }
+                }
+            });
+
+            gameContainer.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+            });
+
+            gameContainer.addEventListener('touchend', (e) => {
+                const endX = e.changedTouches[0].clientX;
+                const endY = e.changedTouches[0].clientY;
+                const dx = endX - startX;
+                const dy = endY - startY;
+
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    if (dx > 0) {
+                        move('right');
+                    } else {
+                        move('left');
+                    }
+                } else {
+                    if (dy > 0) {
+                        move('down');
+                    } else {
+                        move('up');
+                    }
+                }
+            });
+
+            // Prevent scrolling on touch devices
+            gameContainer.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+            }, { passive: false });
+        }
+
+        function showPopup(message) {
+            popupMessage.textContent = message;
+            popup.style.display = 'block';
+        }
+
+        function closePopup() {
+            popup.style.display = 'none';
+            restartGame();
+        }
+
+        function restartGame() {
+            board = Array(size).fill().map(() => Array(size).fill(0));
+            maxTile = 0;
+            updateBoard();
+            addRandomTile();
+            addRandomTile();
+        }
+
+        function initGame() {
+            addRandomTile();
+            addRandomTile();
+            setupInput();
+        }
+
+        initGame();
     </script>
 </body>
 </html>
