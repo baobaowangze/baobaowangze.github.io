@@ -1,308 +1,301 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WUWANGZE 2048 GAME</title>
+    <title>WUWANGZE-ShortVideo</title>
     <style>
-        body {
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        body, html {
             margin: 0;
-            background-color: #ffebcd;
+            padding: 0;
             overflow: hidden;
-        }
-        .game-container {
-            position: relative;
-            width: 90vmin;
-            height: 90vmin;
-            background-color: #ffcc99;
-            border-radius: 20px;
-            padding: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-        .tile {
-            position: absolute;
-            width: 20vmin;
-            height: 20vmin;
-            background-color: #fff8dc;
-            border-radius: 10px;
+            height: 100%;
             display: flex;
-            justify-content: center;
             align-items: center;
-            font-size: 6vmin;
-            font-weight: bold;
-            color: #776e65;
-            transition: transform 0.2s;
+            justify-content: center;
+            background-color: black;
         }
-        .tile[data-value="2"] { background-color: #ffebcd; }
-        .tile[data-value="4"] { background-color: #ffdead; }
-        .tile[data-value="8"] { background-color: #ffb6c1; color: #f9f6f2; }
-        .tile[data-value="16"] { background-color: #ff69b4; color: #f9f6f2; }
-        .tile[data-value="32"] { background-color: #ff1493; color: #f9f6f2; }
-        .tile[data-value="64"] { background-color: #db7093; color: #f9f6f2; }
-        .tile[data-value="128"] { background-color: #ff6347; color: #f9f6f2; }
-        .tile[data-value="256"] { background-color: #ff4500; color: #f9f6f2; }
-        .tile[data-value="512"] { background-color: #ff8c00; color: #f9f6f2; }
-        .tile[data-value="1024"] { background-color: #ffd700; color: #f9f6f2; }
-        .tile[data-value="2048"] { background-color: #ffff00; color: #f9f6f2; }
-        .popup {
+        #video-container {
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 0.3s ease-in-out;
+        }
+        #welcome-screen {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: white;
+            font-size: 24px;
             text-align: center;
+            padding: 20px;
+        }
+        #welcome-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #share-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .share-button {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #qq-share {
+            background-color: #25D366;
+        }
+        #wechat-share {
+            background-color: #1AAD19;
+        }
+        #loading-message {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 20px;
             display: none;
         }
-        .popup button {
-            margin-top: 10px;
-            padding: 5px 10px;
-            border: none;
-            background-color: #ffcc99;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .controls {
-            margin-top: 10px;
-            display: flex;
-            justify-content: space-between;
-            width: 90vmin;
-        }
-        .controls button {
-            padding: 10px;
-            border: none;
-            background-color: #ffcc99;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .max-tile {
-            font-size: 1.5em;
-            font-weight: bold;
+        @media (max-width: 768px) and (orientation: portrait) {
+            #share-buttons {
+                justify-content: space-between;
+                padding: 0 20px;
+                bottom: 20px;
+                right: 20px;
+                left: unset;
+                transform: unset;
+                width: auto;
+            }
+            .share-button {
+                padding: 5px 10px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="game-container" id="game-container"></div>
-    <div class="controls">
-        <button onclick="restartGame()">重置</button>
-        <div class="max-tile" id="max-tile">最大数字: 0</div>
-        <button onclick="downloadGame()">离线玩</button>
+    <div id="welcome-screen">
+        <p>欢迎各位美女帅哥来我的小站刷视频，本站主打一个学习分享，祝大家学习愉快 biu！</p>
+        <p>PS：因请求策略及网络原因，加载前两个视频需要部分时间，请耐心等待。</p>
+        <button id="welcome-button">我会好好学习的</button>
     </div>
-    <div class="popup" id="popup">
-        <p id="popup-message"></p>
-        <button onclick="closePopup()">确定</button>
+    <div id="video-container">
+        <video id="videoPlayer" controls autoplay loop></video>
+        <div id="share-buttons">
+            <button id="qq-share" class="share-button">分享给QQ好友</button>
+            <button id="wechat-share" class="share-button">分享到微信</button>
+        </div>
+        <div id="loading-message">视频正在加载中...</div>
     </div>
+
     <script>
-        const gameContainer = document.getElementById('game-container');
-        const popup = document.getElementById('popup');
-        const popupMessage = document.getElementById('popup-message');
-        const maxTileDisplay = document.getElementById('max-tile');
-        const size = 4;
-        let board = Array(size).fill().map(() => Array(size).fill(0));
-        let maxTile = 0;
+        const apiUrl = 'https://api.kuleu.com/api/xjj?type=json';
+        const videoPlayer = document.getElementById('videoPlayer');
+        const videoContainer = document.getElementById('video-container');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const welcomeButton = document.getElementById('welcome-button');
+        const shareButtons = document.getElementById('share-buttons');
+        const loadingMessage = document.getElementById('loading-message');
+        const qqShareButton = document.getElementById('qq-share');
+        const wechatShareButton = document.getElementById('wechat-share');
+        let videoQueue = [];
+        let currentVideoIndex = 0;
+        let isLoading = false;
 
-        function createTile(value, x, y) {
-            const tile = document.createElement('div');
-            tile.classList.add('tile');
-            tile.dataset.value = value;
-            tile.style.transform = `translate(${x * 22.5}vmin, ${y * 22.5}vmin)`;
-            tile.textContent = value;
-            gameContainer.appendChild(tile);
+        welcomeButton.addEventListener('click', () => {
+            welcomeScreen.style.display = 'none';
+            videoContainer.style.display = 'flex';
+            loadInitialVideos();
+        });
+
+        async function loadInitialVideos() {
+            await preloadVideos(2);
+            if (videoQueue.length > 0) {
+                videoPlayer.src = videoQueue[currentVideoIndex];
+                videoPlayer.style.transform = 'translateY(0)';
+                videoPlayer.play();
+            }
         }
 
-        function updateBoard() {
-            gameContainer.innerHTML = '';
-            for (let y = 0; y < size; y++) {
-                for (let x = 0; x < size; x++) {
-                    if (board[y][x] !== 0) {
-                        createTile(board[y][x], x, y);
-                    }
+        async function fetchVideoUrl() {
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                if (data && data.video) {
+                    return data.video;
                 }
+            } catch (error) {
+                console.error('获取视频失败：', error);
             }
-            maxTileDisplay.textContent = `最大数字: ${maxTile}`;
+            return null;
         }
 
-        function addRandomTile() {
-            let emptyTiles = [];
-            for (let y = 0; y < size; y++) {
-                for (let x = 0; x < size; x++) {
-                    if (board[y][x] === 0) {
-                        emptyTiles.push({ x, y });
-                    }
+        async function preloadVideos(count) {
+            if (isLoading) return;
+            isLoading = true;
+            const newVideos = [];
+            for (let i = 0; i < count; i++) {
+                const videoUrl = await fetchVideoUrl();
+                if (videoUrl) {
+                    newVideos.push(videoUrl);
                 }
             }
-            if (emptyTiles.length > 0) {
-                const { x, y } = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
-                const value = Math.random() < 0.9 ? 2 : 4;
-                board[y][x] = value;
-                updateBoard();
+            videoQueue = videoQueue.concat(newVideos);
+            if (videoQueue.length > 40) {
+                videoQueue = videoQueue.slice(-10);
+                currentVideoIndex -= 30;
+            }
+            isLoading = false;
+        }
+
+        function switchVideo(direction) {
+            if (direction === 'down' && currentVideoIndex < videoQueue.length - 1) {
+                currentVideoIndex++;
+                if (!isLoading && videoQueue.length <= currentVideoIndex + 1) {
+                    loadingMessage.style.display = 'block';
+                    preloadVideos(10).then(() => {
+                        loadingMessage.style.display = 'none';
+                        videoPlayer.style.transform = 'translateY(-100%)';
+                        setTimeout(() => {
+                            videoPlayer.src = videoQueue[currentVideoIndex];
+                            videoPlayer.style.transform = 'translateY(0)';
+                            videoPlayer.play();
+                        }, 300);
+                    });
+                } else {
+                    videoPlayer.style.transform = 'translateY(-100%)';
+                    setTimeout(() => {
+                        videoPlayer.src = videoQueue[currentVideoIndex];
+                        videoPlayer.style.transform = 'translateY(0)';
+                        videoPlayer.play();
+                    }, 300);
+                }
+                if (currentVideoIndex === 4) {
+                    videoQueue = videoQueue.slice(3);
+                    currentVideoIndex -= 3;
+                    preloadVideos(10);
+                }
+            } else if (direction === 'up' && currentVideoIndex > 0) {
+                currentVideoIndex--;
+                videoPlayer.style.transform = 'translateY(100%)';
+                setTimeout(() => {
+                    videoPlayer.src = videoQueue[currentVideoIndex];
+                    videoPlayer.style.transform = 'translateY(0)';
+                    videoPlayer.play();
+                }, 300);
+            }
+        }
+
+        document.addEventListener('touchstart', handleTouchStart, false);
+        document.addEventListener('touchmove', handleTouchMove, false);
+
+        let xDown = null;
+        let yDown = null;
+
+        function handleTouchStart(evt) {
+            const firstTouch = evt.touches[0];
+            xDown = firstTouch.clientX;
+            yDown = firstTouch.clientY;
+        }
+
+        function handleTouchMove(evt) {
+            if (!xDown || !yDown) {
+                return;
+            }
+
+            let xUp = evt.touches[0].clientX;
+            let yUp = evt.touches[0].clientY;
+
+            let xDiff = xDown - xUp;
+            let yDiff = yDown - yUp;
+
+            if (Math.abs(xDiff) > Math.abs(yDiff)) {
             } else {
-                showPopup(`游戏结束，最大数字为 ${maxTile}`);
+                if (yDiff > 0) {
+                    switchVideo('down');
+                } else {
+                    switchVideo('up');
+                }
+            }
+
+            xDown = null;
+            yDown = null;
+        }
+
+        document.addEventListener('wheel', handleWheel, false);
+
+        function handleWheel(evt) {
+            if (evt.deltaY > 0) {
+                switchVideo('down');
+            } else {
+                switchVideo('up');
             }
         }
 
-        function slide(row) {
-            let arr = row.filter(val => val);
-            let missing = size - arr.length;
-            let zeros = Array(missing).fill(0);
-            arr = zeros.concat(arr);
-            return arr;
-        }
+        qqShareButton.addEventListener('click', () => {
+            const videoUrl = videoQueue[currentVideoIndex];
+            const qqUrl = `https://connect.qq.com/widget/shareqq/index.html?url=${encodeURIComponent(videoUrl)}&desc=分享视频`;
+            window.open(qqUrl, '_blank');
+        });
 
-        function combine(row) {
-            for (let i = size - 1; i >= 1; i--) {
-                if (row[i] === row[i - 1]) {
-                    row[i] *= 2;
-                    row[i - 1] = 0;
-                    if (row[i] > maxTile) {
-                        maxTile = row[i];
-                    }
-                }
-            }
-            return row;
-        }
+        wechatShareButton.addEventListener('click', () => {
+            const videoUrl = videoQueue[currentVideoIndex];
+            const wechatUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(videoUrl)}`;
+            window.open(wechatUrl, '_blank');
+        });
 
-        function move(direction) {
-            let moved = false;
-            for (let i = 0; i < size; i++) {
-                let row;
-                if (direction === 'right' || direction === 'left') {
-                    row = board[i];
-                    if (direction === 'left') row.reverse();
-                } else {
-                    row = board.map(r => r[i]);
-                    if (direction === 'up') row.reverse();
-                }
+        videoPlayer.addEventListener('ended', () => {
+            videoPlayer.play();
+        });
 
-                const originalRow = [...row];
-                row = slide(row);
-                row = combine(row);
-                row = slide(row);
-
-                if (direction === 'left') row.reverse();
-                if (direction === 'up') row.reverse();
-
-                if (direction === 'right' || direction === 'left') {
-                    board[i] = row;
-                } else {
-                    for (let j = 0; j < size; j++) {
-                        board[j][i] = row[j];
-                    }
-                }
-
-                if (JSON.stringify(originalRow) !== JSON.stringify(row)) {
-                    moved = true;
-                }
-            }
-            if (moved) {
-                addRandomTile();
+        function adjustShareButtons() {
+            if (window.innerWidth > 768 || (window.innerHeight < window.innerWidth)) {
+                shareButtons.style.justifyContent = 'flex-end';
+                shareButtons.style.left = 'unset';
+                shareButtons.style.right = '20px';
+                shareButtons.style.bottom = '20px';
+                shareButtons.style.transform = 'unset';
+                shareButtons.style.width = 'auto';
+            } else {
+                shareButtons.style.justifyContent = 'space-between';
+                shareButtons.style.left = '50%';
+                shareButtons.style.transform = 'translateX(-50%)';
+                shareButtons.style.width = '100%';
             }
         }
 
-        function setupInput() {
-            let startX, startY;
-            gameContainer.addEventListener('mousedown', (e) => {
-                startX = e.clientX;
-                startY = e.clientY;
-            });
-
-            gameContainer.addEventListener('mouseup', (e) => {
-                const endX = e.clientX;
-                const endY = e.clientY;
-                const dx = endX - startX;
-                const dy = endY - startY;
-
-                if (Math.abs(dx) > Math.abs(dy)) {
-                    if (dx > 0) {
-                        move('right');
-                    } else {
-                        move('left');
-                    }
-                } else {
-                    if (dy > 0) {
-                        move('down');
-                    } else {
-                        move('up');
-                    }
-                }
-            });
-
-            gameContainer.addEventListener('touchstart', (e) => {
-                startX = e.touches[0].clientX;
-                startY = e.touches[0].clientY;
-            });
-
-            gameContainer.addEventListener('touchend', (e) => {
-                const endX = e.changedTouches[0].clientX;
-                const endY = e.changedTouches[0].clientY;
-                const dx = endX - startX;
-                const dy = endY - startY;
-
-                if (Math.abs(dx) > Math.abs(dy)) {
-                    if (dx > 0) {
-                        move('right');
-                    } else {
-                        move('left');
-                    }
-                } else {
-                    if (dy > 0) {
-                        move('down');
-                    } else {
-                        move('up');
-                    }
-                }
-            });
-
-            // Prevent scrolling on touch devices
-            gameContainer.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-            }, { passive: false });
-        }
-
-        function showPopup(message) {
-            popupMessage.textContent = message;
-            popup.style.display = 'block';
-        }
-
-        function closePopup() {
-            popup.style.display = 'none';
-            restartGame();
-        }
-
-        function restartGame() {
-            board = Array(size).fill().map(() => Array(size).fill(0));
-            maxTile = 0;
-            updateBoard();
-            addRandomTile();
-            addRandomTile();
-        }
-
-        function downloadGame() {
-            const htmlContent = document.documentElement.outerHTML;
-            const blob = new Blob([htmlContent], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = '2048_game.html';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function initGame() {
-            addRandomTile();
-            addRandomTile();
-            setupInput();
-        }
-
-        initGame();
+        adjustShareButtons();
+        window.addEventListener('resize', adjustShareButtons);
     </script>
 </body>
 </html>
