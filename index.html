@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -86,6 +85,19 @@
             font-size: 20px;
             display: none;
         }
+        #auto-switch-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #FF5722;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            z-index: 100;
+        }
         @media (max-width: 768px) and (orientation: portrait) {
             #share-buttons {
                 justify-content: space-between;
@@ -111,13 +123,14 @@
         <button id="welcome-button">我会好好学习的</button>
     </div>
     <div id="video-container">
-        <video id="videoPlayer" controls autoplay loop></video>
+        <video id="videoPlayer" controls autoplay></video>
         <div id="share-buttons">
             <button id="qq-share" class="share-button">分享给QQ好友</button>
             <button id="wechat-share" class="share-button">分享到微信</button>
         </div>
         <div id="loading-message">视频正在加载中...</div>
     </div>
+    <button id="auto-switch-button" class="switch-button">点击开启</button>
 
     <script>
         const apiUrl = 'https://api.kuleu.com/api/xjj?type=json';
@@ -129,14 +142,31 @@
         const loadingMessage = document.getElementById('loading-message');
         const qqShareButton = document.getElementById('qq-share');
         const wechatShareButton = document.getElementById('wechat-share');
+        const autoSwitchButton = document.getElementById('auto-switch-button');
         let videoQueue = [];
         let currentVideoIndex = 0;
         let isLoading = false;
+        let autoSwitchEnabled = false;
 
         welcomeButton.addEventListener('click', () => {
             welcomeScreen.style.display = 'none';
             videoContainer.style.display = 'flex';
             loadInitialVideos();
+        });
+
+        autoSwitchButton.addEventListener('click', () => {
+            autoSwitchEnabled = !autoSwitchEnabled;
+            autoSwitchButton.style.backgroundColor = autoSwitchEnabled ? '#4CAF50' : '#FF5722';
+            autoSwitchButton.textContent = autoSwitchEnabled ? '自动切换已开启' : '点击开启';
+        });
+
+        videoPlayer.addEventListener('ended', () => {
+            if (autoSwitchEnabled) {
+                switchVideo('down');
+            } else {
+                videoPlayer.currentTime = 0;
+                videoPlayer.play();
+            }
         });
 
         async function loadInitialVideos() {
@@ -273,10 +303,6 @@
             const videoUrl = videoQueue[currentVideoIndex];
             const wechatUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(videoUrl)}`;
             window.open(wechatUrl, '_blank');
-        });
-
-        videoPlayer.addEventListener('ended', () => {
-            videoPlayer.play();
         });
 
         function adjustShareButtons() {
