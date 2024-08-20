@@ -130,7 +130,7 @@
         </div>
         <div id="loading-message">视频正在加载中...</div>
     </div>
-    <button id="auto-switch-button" class="switch-button">点击开启</button>
+    <button id="auto-switch-button" class="switch-button">点击开启自动切换</button>
 
     <script>
         const apiUrl = 'https://api.kuleu.com/api/xjj?type=json';
@@ -157,7 +157,7 @@
         autoSwitchButton.addEventListener('click', () => {
             autoSwitchEnabled = !autoSwitchEnabled;
             autoSwitchButton.style.backgroundColor = autoSwitchEnabled ? '#4CAF50' : '#FF5722';
-            autoSwitchButton.textContent = autoSwitchEnabled ? '自动切换已开启' : '点击开启';
+            autoSwitchButton.textContent = autoSwitchEnabled ? '自动切换已开启' : '点击开启自动切换';
         });
 
         videoPlayer.addEventListener('ended', () => {
