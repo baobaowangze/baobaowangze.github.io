@@ -3,326 +3,803 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WUWANGZE-ShortVideo</title>
+    <title>宇宙宙长吴旺泽的魅力认证考试</title>
     <style>
-        body, html {
+        * {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: black;
+            box-sizing: border-box;
         }
-        #video-container {
-            width: 100%;
-            height: 100%;
-            display: none;
-            align-items: center;
+
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            min-height: 100vh;
+            display: flex;
             justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
             position: relative;
         }
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            transition: transform 0.3s ease-in-out;
-        }
-        #welcome-screen {
+
+        /* 动态星空背景 */
+        .universe {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            color: white;
-            font-size: 24px;
-            text-align: center;
-            padding: 20px;
+            pointer-events: none;
+            z-index: 0;
         }
-        #welcome-button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 18px;
-            cursor: pointer;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        #share-buttons {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-        }
-        .share-button {
-            padding: 10px 20px;
-            font-size: 18px;
-            cursor: pointer;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        #qq-share {
-            background-color: #25D366;
-        }
-        #wechat-share {
-            background-color: #1AAD19;
-        }
-        #loading-message {
+
+        .star {
             position: absolute;
-            bottom: 20px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        .shooting-star {
+            position: absolute;
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, white, transparent);
+            animation: shoot 3s linear infinite;
+        }
+
+        @keyframes shoot {
+            from { transform: translateX(-100px) translateY(0); }
+            to { transform: translateX(calc(100vw + 100px)) translateY(100px); }
+        }
+
+        .container {
+            max-width: 900px;
+            width: 90%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+            padding: 40px;
+            position: relative;
+            z-index: 1;
+            animation: floatIn 0.8s ease-out;
+        }
+
+        @keyframes floatIn {
+            from {
+                transform: translateY(50px) scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+            position: relative;
+        }
+
+        .crown {
+            position: absolute;
+            top: -40px;
             left: 50%;
             transform: translateX(-50%);
-            color: white;
-            font-size: 20px;
-            display: none;
+            font-size: 50px;
+            animation: bounce 2s infinite;
         }
-        #auto-switch-button {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            font-size: 16px;
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        .title {
+            font-size: 2.8em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient 3s ease infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            font-style: italic;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .quiz-container {
+            margin: 30px 0;
+        }
+
+        .question-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .question-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .question-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .question-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.95em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .question-text {
+            font-size: 1.4em;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+        }
+
+        .options {
+            display: grid;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .option {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 18px 25px;
             cursor: pointer;
-            background-color: #FF5722;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        .option::after {
+            content: '✨';
+            position: absolute;
+            right: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            transform: translateX(8px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.25);
+        }
+
+        .option:hover::after {
+            opacity: 1;
+        }
+
+        .option.selected {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+            transform: scale(1.02);
+        }
+
+        .option.correct {
+            animation: correctAnimation 0.6s ease;
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
+            border-color: #11998e;
+        }
+
+        @keyframes correctAnimation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .option-label {
+            font-weight: bold;
+            margin-right: 15px;
+            color: #667eea;
+            font-size: 1.1em;
+            min-width: 30px;
+        }
+
+        .option.selected .option-label {
+            color: white;
+        }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 18px 40px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
             color: white;
             border: none;
-            border-radius: 5px;
-            z-index: 100;
+            border-radius: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 35px;
+            position: relative;
+            overflow: hidden;
         }
-        @media (max-width: 768px) and (orientation: portrait) {
-            #share-buttons {
-                justify-content: space-between;
-                padding: 0 20px;
-                bottom: 20px;
-                right: 20px;
-                left: unset;
-                transform: unset;
-                width: auto;
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .submit-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(238, 90, 36, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-container {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 20px;
+            color: white;
+            animation: slideIn 0.8s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-container::before {
+            content: '🎉';
+            position: absolute;
+            font-size: 100px;
+            opacity: 0.1;
+            top: -20px;
+            right: -20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        .score-display {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .score-message {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        .medal {
+            font-size: 80px;
+            margin: 20px 0;
+            animation: spin 2s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            0%, 100% { transform: rotateY(0deg); }
+            50% { transform: rotateY(180deg); }
+        }
+
+        .restart-btn {
+            padding: 12px 30px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .restart-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #ff6b6b;
+            position: absolute;
+            animation: confetti-fall 3s linear;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
             }
-            .share-button {
-                padding: 5px 10px;
-                font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+            
+            .title {
+                font-size: 2em;
+            }
+            
+            .question-text {
+                font-size: 1.2em;
             }
         }
     </style>
 </head>
 <body>
-    <div id="welcome-screen">
-        <p>欢迎各位美女帅哥来我的小站刷视频，本站主打一个学习分享，祝大家学习愉快 biu！</p>
-        <p>PS：因请求策略及网络原因，加载前两个视频需要部分时间，请耐心等待。</p>
-        <p>有任何问题均可联系站长，站长微信：SweetDream400</p>
-        <button id="welcome-button">我会好好学习的</button>
-    </div>
-    <div id="video-container">
-        <video id="videoPlayer" controls autoplay></video>
-        <div id="share-buttons">
-            <button id="qq-share" class="share-button">分享给QQ好友</button>
-            <button id="wechat-share" class="share-button">分享到微信</button>
+    <div class="universe" id="universe"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div class="crown">👑</div>
+            <h1 class="title">宇宙宙长吴旺泽魅力认证考试</h1>
+            <p class="subtitle">—— 全宇宙唯一指定官方认证 ——</p>
         </div>
-        <div id="loading-message">视频正在加载中...</div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="quiz-container" id="quizContainer">
+            <!-- 题目将通过JavaScript动态生成 -->
+        </div>
+
+        <button class="submit-btn" id="submitBtn" onclick="submitQuiz()">提交答案，获得宙长认证！</button>
+
+        <div class="result-container" id="resultContainer">
+            <div class="medal">🏆</div>
+            <div class="score-display" id="scoreDisplay">100分</div>
+            <div class="score-message" id="scoreMessage">恭喜你！已获得宙长亲笔签名认证！</div>
+            <p style="font-size: 1.2em; margin: 20px 0;">你真正理解了宇宙宙长的伟大魅力！</p>
+            <button class="restart-btn" onclick="restartQuiz()">再次认证</button>
+        </div>
     </div>
-    <button id="auto-switch-button" class="switch-button">点击开启自动切换</button>
 
     <script>
-        const apiUrl = 'https://api.kuleu.com/api/xjj?type=json';
-        const videoPlayer = document.getElementById('videoPlayer');
-        const videoContainer = document.getElementById('video-container');
-        const welcomeScreen = document.getElementById('welcome-screen');
-        const welcomeButton = document.getElementById('welcome-button');
-        const shareButtons = document.getElementById('share-buttons');
-        const loadingMessage = document.getElementById('loading-message');
-        const qqShareButton = document.getElementById('qq-share');
-        const wechatShareButton = document.getElementById('wechat-share');
-        const autoSwitchButton = document.getElementById('auto-switch-button');
-        let videoQueue = [];
-        let currentVideoIndex = 0;
-        let isLoading = false;
-        let autoSwitchEnabled = false;
-
-        welcomeButton.addEventListener('click', () => {
-            welcomeScreen.style.display = 'none';
-            videoContainer.style.display = 'flex';
-            loadInitialVideos();
-        });
-
-        autoSwitchButton.addEventListener('click', () => {
-            autoSwitchEnabled = !autoSwitchEnabled;
-            autoSwitchButton.style.backgroundColor = autoSwitchEnabled ? '#4CAF50' : '#FF5722';
-            autoSwitchButton.textContent = autoSwitchEnabled ? '自动切换已开启' : '点击开启自动切换';
-        });
-
-        videoPlayer.addEventListener('ended', () => {
-            if (autoSwitchEnabled) {
-                switchVideo('down');
-            } else {
-                videoPlayer.currentTime = 0;
-                videoPlayer.play();
+        // 创建星空背景
+        function createUniverse() {
+            const universe = document.getElementById('universe');
+            
+            // 创建星星
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = star.style.height = Math.random() * 3 + 'px';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                universe.appendChild(star);
             }
-        });
-
-        async function loadInitialVideos() {
-            await preloadVideos(2);
-            if (videoQueue.length > 0) {
-                videoPlayer.src = videoQueue[currentVideoIndex];
-                videoPlayer.style.transform = 'translateY(0)';
-                videoPlayer.play();
+            
+            // 创建流星
+            for (let i = 0; i < 3; i++) {
+                const shootingStar = document.createElement('div');
+                shootingStar.className = 'shooting-star';
+                shootingStar.style.top = Math.random() * 50 + '%';
+                shootingStar.style.animationDelay = Math.random() * 5 + 's';
+                universe.appendChild(shootingStar);
             }
         }
 
-        async function fetchVideoUrl() {
-            try {
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-                if (data && data.video) {
-                    return data.video;
-                }
-            } catch (error) {
-                console.error('获取视频失败：', error);
+        // 题目数据
+        const questions = [
+            {
+                question: "全宇宙最帅的人是谁？",
+                options: [
+                    "吴旺泽",
+                    "我思考了一下，觉得是吴旺泽",
+                    "毫无疑问，是吴旺泽",
+                    "是宇宙宙长"
+                ]
+            },
+            {
+                question: "全宇宙最可爱的是谁？",
+                options: [
+                    "绝对是吴旺泽",
+                    "我深刻思考了一下，觉得是吴旺泽",
+                    "毫无疑问，是吴旺泽",
+                    "是咱们亲爱的宇宙宙长"
+                ]
+            },
+            {
+                question: "谁的眼神能融化整个银河系？",
+                options: [
+                    "吴旺泽那双迷人的眼睛",
+                    "宙长的深情凝视",
+                    "吴旺泽的星星眼",
+                    "那个让宇宙都为之倾倒的吴旺泽"
+                ]
+            },
+            {
+                question: "谁的笑容能让花儿都害羞地低下头？",
+                options: [
+                    "吴旺泽的阳光笑容",
+                    "宙长的迷人微笑",
+                    "吴旺泽那治愈系的笑容",
+                    "让全宇宙都心动的吴旺泽"
+                ]
+            },
+            {
+                question: "谁是智慧与颜值的完美结合体？",
+                options: [
+                    "当然是吴旺泽",
+                    "宇宙宙长本人",
+                    "吴旺泽，没有之一",
+                    "集万千宠爱于一身的吴旺泽"
+                ]
+            },
+            {
+                question: "谁的存在让宇宙更加精彩？",
+                options: [
+                    "吴旺泽",
+                    "伟大的宙长",
+                    "独一无二的吴旺泽",
+                    "让世界充满美好的吴旺泽"
+                ]
+            },
+            {
+                question: "谁的声音能让时间都为之停留？",
+                options: [
+                    "吴旺泽的磁性嗓音",
+                    "宙长的天籁之音",
+                    "吴旺泽那动人的声音",
+                    "让耳朵怀孕的吴旺泽"
+                ]
+            },
+            {
+                question: "谁是行走的荷尔蒙？",
+                options: [
+                    "吴旺泽本泽",
+                    "宇宙宙长",
+                    "魅力四射的吴旺泽",
+                    "帅得让人无法呼吸的吴旺泽"
+                ]
+            },
+            {
+                question: "谁的出现让星星都黯然失色？",
+                options: [
+                    "吴旺泽",
+                    "光芒万丈的宙长",
+                    "比星星还耀眼的吴旺泽",
+                    "宇宙中最亮的星——吴旺泽"
+                ]
+            },
+            {
+                question: "谁是温柔与霸气的完美融合？",
+                options: [
+                    "吴旺泽",
+                    "宇宙宙长",
+                    "可盐可甜的吴旺泽",
+                    "让所有人都着迷的吴旺泽"
+                ]
+            },
+            {
+                question: "谁的才华让缪斯女神都自愧不如？",
+                options: [
+                    "才华横溢的吴旺泽",
+                    "宙长本人",
+                    "全能的吴旺泽",
+                    "艺术界的巅峰——吴旺泽"
+                ]
+            },
+            {
+                question: "谁的存在定义了'完美'这个词？",
+                options: [
+                    "吴旺泽",
+                    "宇宙宙长",
+                    "完美的化身——吴旺泽",
+                    "重新定义完美的吴旺泽"
+                ]
+            },
+            {
+                question: "谁让春天都愿意提前到来？",
+                options: [
+                    "温暖的吴旺泽",
+                    "宙长的魅力",
+                    "如春风般的吴旺泽",
+                    "带来希望的吴旺泽"
+                ]
+            },
+            {
+                question: "谁是上帝最得意的作品？",
+                options: [
+                    "吴旺泽",
+                    "宙长本人",
+                    "上帝的杰作——吴旺泽",
+                    "让上帝都嫉妒的吴旺泽"
+                ]
+            },
+            {
+                question: "谁的气质让贵族都自叹不如？",
+                options: [
+                    "优雅的吴旺泽",
+                    "高贵的宙长",
+                    "与生俱来的贵族气质——吴旺泽",
+                    "皇室风范的吴旺泽"
+                ]
+            },
+            {
+                question: "谁让时间都愿意为他放慢脚步？",
+                options: [
+                    "吴旺泽",
+                    "宙长的魅力",
+                    "让时光停留的吴旺泽",
+                    "永恒的吴旺泽"
+                ]
+            },
+            {
+                question: "谁是梦想的化身？",
+                options: [
+                    "吴旺泽",
+                    "宇宙宙长",
+                    "所有人的梦想——吴旺泽",
+                    "实现梦想的吴旺泽"
+                ]
+            },
+            {
+                question: "谁的存在让世界充满爱？",
+                options: [
+                    "充满爱的吴旺泽",
+                    "宙长的仁慈",
+                    "爱的使者——吴旺泽",
+                    "播撒爱的吴旺泽"
+                ]
+            },
+            {
+                question: "谁是传说中的白马王子？",
+                options: [
+                    "吴旺泽王子",
+                    "宙长殿下",
+                    "现实中的王子——吴旺泽",
+                    "比童话更美好的吴旺泽"
+                ]
+            },
+            {
+                question: "谁是宇宙的终极答案？",
+                options: [
+                    "吴旺泽",
+                    "42...不对，是吴旺泽",
+                    "宇宙的真理——吴旺泽",
+                    "一切的答案都是吴旺泽"
+                ]
             }
-            return null;
+        ];
+
+        let currentAnswers = {};
+        let totalQuestions = questions.length;
+
+        // 初始化答题界面
+        function initQuiz() {
+            const quizContainer = document.getElementById('quizContainer');
+            quizContainer.innerHTML = '';
+            
+            questions.forEach((q, index) => {
+                const questionCard = document.createElement('div');
+                questionCard.className = 'question-card';
+                questionCard.innerHTML = `
+                    <div class="question-number">第 ${index + 1} 题</div>
+                    <div class="question-text">${q.question}</div>
+                    <div class="options">
+                        ${q.options.map((option, optIndex) => `
+                            <div class="option" onclick="selectOption(${index}, ${optIndex}, this)">
+                                <span class="option-label">${String.fromCharCode(65 + optIndex)}.</span>
+                                <span>${option}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                quizContainer.appendChild(questionCard);
+            });
         }
 
-        async function preloadVideos(count) {
-            if (isLoading) return;
-            isLoading = true;
-            const newVideos = [];
-            for (let i = 0; i < count; i++) {
-                const videoUrl = await fetchVideoUrl();
-                if (videoUrl) {
-                    newVideos.push(videoUrl);
-                }
-            }
-            videoQueue = videoQueue.concat(newVideos);
-            if (videoQueue.length > 40) {
-                videoQueue = videoQueue.slice(-10);
-                currentVideoIndex -= 30;
-            }
-            isLoading = false;
+        // 选择选项
+        function selectOption(questionIndex, optionIndex, element) {
+            // 移除同一题目的其他选中状态
+            const questionCard = element.closest('.question-card');
+            const options = questionCard.querySelectorAll('.option');
+            options.forEach(opt => opt.classList.remove('selected'));
+            
+            // 添加选中状态
+            element.classList.add('selected');
+            
+            // 记录答案
+            currentAnswers[questionIndex] = optionIndex;
+            
+            // 更新进度条
+            updateProgress();
         }
 
-        function switchVideo(direction) {
-            if (direction === 'down' && currentVideoIndex < videoQueue.length - 1) {
-                currentVideoIndex++;
-                if (!isLoading && videoQueue.length <= currentVideoIndex + 1) {
-                    loadingMessage.style.display = 'block';
-                    preloadVideos(10).then(() => {
-                        loadingMessage.style.display = 'none';
-                        videoPlayer.style.transform = 'translateY(-100%)';
-                        setTimeout(() => {
-                            videoPlayer.src = videoQueue[currentVideoIndex];
-                            videoPlayer.style.transform = 'translateY(0)';
-                            videoPlayer.play();
-                        }, 300);
-                    });
-                } else {
-                    videoPlayer.style.transform = 'translateY(-100%)';
-                    setTimeout(() => {
-                        videoPlayer.src = videoQueue[currentVideoIndex];
-                        videoPlayer.style.transform = 'translateY(0)';
-                        videoPlayer.play();
-                    }, 300);
-                }
-                if (currentVideoIndex === 4) {
-                    videoQueue = videoQueue.slice(3);
-                    currentVideoIndex -= 3;
-                    preloadVideos(10);
-                }
-            } else if (direction === 'up' && currentVideoIndex > 0) {
-                currentVideoIndex--;
-                videoPlayer.style.transform = 'translateY(100%)';
+        // 更新进度条
+        function updateProgress() {
+            const answeredCount = Object.keys(currentAnswers).length;
+            const progress = (answeredCount / totalQuestions) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        // 提交答案
+        function submitQuiz() {
+            if (Object.keys(currentAnswers).length < totalQuestions) {
+                // 创建提示效果
+                const btn = document.getElementById('submitBtn');
+                btn.style.animation = 'shake 0.5s';
                 setTimeout(() => {
-                    videoPlayer.src = videoQueue[currentVideoIndex];
-                    videoPlayer.style.transform = 'translateY(0)';
-                    videoPlayer.play();
-                }, 300);
-            }
-        }
-
-        document.addEventListener('touchstart', handleTouchStart, false);
-        document.addEventListener('touchmove', handleTouchMove, false);
-
-        let xDown = null;
-        let yDown = null;
-
-        function handleTouchStart(evt) {
-            const firstTouch = evt.touches[0];
-            xDown = firstTouch.clientX;
-            yDown = firstTouch.clientY;
-        }
-
-        function handleTouchMove(evt) {
-            if (!xDown || !yDown) {
+                    btn.style.animation = '';
+                }, 500);
                 return;
             }
 
-            let xUp = evt.touches[0].clientX;
-            let yUp = evt.touches[0].clientY;
-
-            let xDiff = xDown - xUp;
-            let yDiff = yDown - yUp;
-
-            if (Math.abs(xDiff) > Math.abs(yDiff)) {
-            } else {
-                if (yDiff > 0) {
-                    switchVideo('down');
-                } else {
-                    switchVideo('up');
+            // 显示所有正确答案（所有选项都是正确的）
+            const options = document.querySelectorAll('.option');
+            options.forEach(opt => {
+                if (opt.classList.contains('selected')) {
+                    opt.classList.add('correct');
                 }
-            }
+            });
 
-            xDown = null;
-            yDown = null;
+            // 计算分数（因为都是正确答案，所以满分）
+            setTimeout(() => {
+                showResult();
+            }, 1000);
         }
 
-        document.addEventListener('wheel', handleWheel, false);
+        // 显示结果
+        function showResult() {
+            document.getElementById('quizContainer').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('resultContainer').style.display = 'block';
+            
+            // 创建彩纸效果
+            createConfetti();
+            
+            // 根据分数显示不同消息（虽然都是100分）
+            const messages = [
+                "恭喜你！已获得宙长亲笔签名认证！",
+                "完美！你真正理解了宙长的伟大！",
+                "太棒了！你就是宙长的知音！",
+                "优秀！你获得了宙长的特别嘉奖！",
+                "惊人！你对宙长的了解已达巅峰！"
+            ];
+            
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            document.getElementById('scoreMessage').textContent = randomMessage;
+        }
 
-        function handleWheel(evt) {
-            if (evt.deltaY > 0) {
-                switchVideo('down');
-            } else {
-                switchVideo('up');
+        // 创建彩纸效果
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffd93d', '#ff6bcb'];
+            
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 3000);
+                }, i * 30);
             }
         }
 
-        qqShareButton.addEventListener('click', () => {
-            const videoUrl = videoQueue[currentVideoIndex];
-            const qqUrl = `https://connect.qq.com/widget/shareqq/index.html?url=${encodeURIComponent(videoUrl)}&desc=分享视频`;
-            window.open(qqUrl, '_blank');
-        });
-
-        wechatShareButton.addEventListener('click', () => {
-            const videoUrl = videoQueue[currentVideoIndex];
-            const wechatUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(videoUrl)}`;
-            window.open(wechatUrl, '_blank');
-        });
-
-        function adjustShareButtons() {
-            if (window.innerWidth > 768 || (window.innerHeight < window.innerWidth)) {
-                shareButtons.style.justifyContent = 'flex-end';
-                shareButtons.style.left = 'unset';
-                shareButtons.style.right = '20px';
-                shareButtons.style.bottom = '20px';
-                shareButtons.style.transform = 'unset';
-                shareButtons.style.width = 'auto';
-            } else {
-                shareButtons.style.justifyContent = 'space-between';
-                shareButtons.style.left = '50%';
-                shareButtons.style.transform = 'translateX(-50%)';
-                shareButtons.style.width = '100%';
-            }
+        // 重新开始
+        function restartQuiz() {
+            currentAnswers = {};
+            document.getElementById('quizContainer').style.display = 'block';
+            document.getElementById('submitBtn').style.display = 'block';
+            document.getElementById('resultContainer').style.display = 'none';
+            document.getElementById('progressFill').style.width = '0%';
+            
+            // 清除所有选中状态
+            const options = document.querySelectorAll('.option');
+            options.forEach(opt => {
+                opt.classList.remove('selected', 'correct');
+            });
         }
 
-        adjustShareButtons();
-        window.addEventListener('resize', adjustShareButtons);
+        // 添加摇晃动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 页面加载时初始化
+        window.onload = function() {
+            createUniverse();
+            initQuiz();
+        };
     </script>
 </body>
 </html>
