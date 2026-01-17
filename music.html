@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WWZ--音乐播放器 (宙长大人版)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        :root {
+            --font-main: 'Noto Sans SC', 'Segoe UI', Arial, sans-serif;
+            --bg-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            --container-bg: rgba(255, 255, 255, 0.6);
+            --container-shadow: rgba(0, 0, 0, 0.1);
+            --backdrop-blur: 12px;
+            --text-color: #2c3e50;
+            --text-secondary-color: #7f8c8d;
+            --primary-color: #3498db;
+            --primary-color-dark: #2980b9;
+            --warning-color: #e74c3c;
+            --item-hover-bg: rgba(52, 152, 219, 0.1);
+            --item-current-bg: rgba(52, 152, 219, 0.2);
+            --item-current-text: var(--primary-color);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --lyrics-highlight-bg: rgba(46, 204, 113, 0.15);
+            --lyrics-highlight-text: #27ae60;
+            --lyrics-highlight-shadow: rgba(46, 204, 113, 0.2);
+            --component-bg: rgba(255, 255, 255, 0.5);
+            --gold: #d4b166; /* SVIP 金色 */
+        }
+
+        .dark-mode {
+            --bg-gradient: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            --container-bg: rgba(30, 30, 30, 0.6);
+            --container-shadow: rgba(0, 0, 0, 0.3);
+            --text-color: #ecf0f1;
+            --text-secondary-color: #95a5a6;
+            --primary-color: #5dade2;
+            --primary-color-dark: #3498db;
+            --item-hover-bg: rgba(93, 173, 226, 0.1);
+            --item-current-bg: rgba(93, 173, 226, 0.2);
+            --border-color: rgba(255, 255, 255, 0.15);
+            --lyrics-highlight-bg: rgba(26, 188, 156, 0.15);
+            --lyrics-highlight-text: #1abc9c;
+            --component-bg: rgba(44, 44, 44, 0.5);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 3px; }
+        .dark-mode ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
+
+        body {
+            font-family: var(--font-main);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box;
+            background-image: var(--bg-gradient); background-attachment: fixed;
+            color: var(--text-color); transition: background 0.5s, color 0.5s;
+        }
+
+        .container {
+            background: var(--container-bg);
+            backdrop-filter: blur(var(--backdrop-blur));
+            -webkit-backdrop-filter: blur(var(--backdrop-blur));
+            padding: 35px; border-radius: 24px;
+            box-shadow: 0 15px 30px var(--container-shadow);
+            border: 1px solid var(--border-color);
+            width: 100%; max-width: 850px;
+            display: grid; grid-template-rows: auto auto 1fr auto; gap: 20px;
+            height: 90vh; max-height: 700px; position: relative;
+        }
+
+        .header { text-align: center; position: relative; }
+        .header h1 { margin: 0; font-size: 2.2em; font-weight: 700; color: var(--primary-color); letter-spacing: 1px; }
+        .header .warning { color: var(--text-secondary-color); font-size: 0.9em; margin-top: 10px; font-style: italic; }
+        
+        /* VIP Tag */
+        .vip-tag {
+            display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-left: 10px; vertical-align: middle;
+            background: #ccc; color: #fff; cursor: pointer; transition: 0.3s;
+        }
+        .vip-tag.active {
+            background: linear-gradient(135deg, #d4b166, #bfa055);
+            color: #000; box-shadow: 0 2px 10px rgba(212, 177, 102, 0.4);
+        }
+        
+        .file-input-area {
+            background: var(--component-bg); border: 2px dashed var(--border-color); border-radius: 16px; padding: 20px;
+            text-align: center; cursor: pointer; transition: all 0.3s ease;
+        }
+        .file-input-area:hover { border-color: var(--primary-color); background: var(--item-hover-bg); }
+        .file-input-label { display: flex; flex-direction: column; align-items: center; color: var(--text-secondary-color); }
+        .file-input-label i { font-size: 2em; margin-bottom: 10px; color: var(--primary-color); }
+        
+        .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; overflow: hidden; }
+        .playlist, .lyrics { background: var(--component-bg); border-radius: 16px; padding: 20px; border: 1px solid var(--border-color); height: 100%; overflow-y: auto; }
+        
+        .playlist div { padding: 12px 15px; border-radius: 10px; transition: 0.2s; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .playlist div:hover { background-color: var(--item-hover-bg); transform: translateX(5px); }
+        .playlist .current { color: var(--item-current-text); font-weight: 500; background-color: var(--item-current-bg); }
+        
+        .lyrics { text-align: center; font-size: 1.1em; line-height: 2.2; }
+        .lyrics .current { color: var(--lyrics-highlight-text); font-weight: 700; transform: scale(1.05); }
+
+        .controls { display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap; }
+        .controls button { background: var(--primary-color); color: white; border: none; border-radius: 50%; cursor: pointer; width: 50px; height: 50px; font-size: 1.2em; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .controls button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
+        .controls button#loadOnlineBtn { width: auto; border-radius: 25px; padding: 0 25px; }
+        .controls audio { flex-grow: 1; min-width: 300px; }
+        
+        .theme-switch-wrapper { position: absolute; top: 0px; right: 0px; }
+        .theme-switch { display: inline-block; height: 24px; position: relative; width: 48px; }
+        .theme-switch input { display:none; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 24px; }
+        .slider:before { background-color: #fff; bottom: 3px; content: ""; height: 18px; left: 3px; position: absolute; transition: .4s; width: 18px; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        /* --- VIP Modal Styles --- */
+        .vip-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            z-index: 1000; display: none; justify-content: center; align-items: center;
+        }
+        .vip-overlay.show { display: flex; animation: fadeIn 0.3s; }
+        
+        .vip-modal {
+            background: var(--component-bg); width: 90%; max-width: 400px;
+            border-radius: 20px; padding: 30px; text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid var(--border-color);
+            position: relative;
+        }
+        .vip-modal h2 { margin: 0 0 10px 0; color: var(--gold); font-size: 24px; }
+        .vip-modal p { color: var(--text-secondary-color); font-size: 14px; margin-bottom: 25px; }
+        
+        .vip-plans { display: grid; gap: 15px; margin-bottom: 25px; }
+        .vip-plan {
+            background: rgba(255,255,255,0.1); border: 2px solid var(--border-color);
+            border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .vip-plan:hover { border-color: var(--gold); background: rgba(212, 177, 102, 0.1); }
+        .vip-plan.selected { border-color: var(--gold); background: rgba(212, 177, 102, 0.2); transform: scale(1.02); }
+        
+        .plan-name { font-weight: bold; font-size: 16px; }
+        .plan-price { color: var(--gold); font-weight: bold; font-size: 18px; }
+        .plan-price::before { content: '¥'; font-size: 12px; margin-right: 2px; }
+        
+        .pay-btn {
+            background: linear-gradient(135deg, #d4b166, #bfa055); color: #000;
+            border: none; width: 100%; padding: 12px; border-radius: 10px;
+            font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .pay-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(212, 177, 102, 0.4); }
+        .close-vip { position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 20px; opacity: 0.5; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        @media (max-width: 768px) {
+            .container { height: 100vh; max-height: none; border-radius: 0; }
+            .main-content { grid-template-columns: 1fr; }
+            .playlist, .lyrics { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <div class="theme-switch-wrapper">
+            <label class="theme-switch"><input type="checkbox" id="checkbox" /><div class="slider"></div></label>
+        </div>
+        <h1>
+            Wu WangZe Music 
+            <span id="vipTag" class="vip-tag" onclick="VipManager.showModal()">SVIP</span>
+        </h1>
+        <div class="warning" id="vipStatusText">未开通 SVIP，仅可试听</div>
+    </div>
+    
+    <div class="file-input-area" id="fileDropArea">
+        <input type="file" id="fileInput" multiple accept="audio/*,.lrc,.txt" style="display: none;">
+        <label for="fileInput" class="file-input-label"><i class="fas fa-folder-plus"></i><span>本地音乐 / 拖拽上传</span></label>
+    </div>
+    
+    <div class="main-content">
+        <div class="playlist" id="playlist">请选择本地音乐或探索在线雷达</div>
+        <div class="lyrics" id="lyrics">歌词将在此处同步显示</div>
+    </div>
+
+    <div class="controls">
+        <button onclick="playPrevious()"><i class="fas fa-backward-step"></i></button>
+        <audio id="audioPlayer" controls></audio>
+        <button onclick="playNext()"><i class="fas fa-forward-step"></i></button>
+        <button id="loadOnlineBtn" title="探索雷达"><i class="fas fa-satellite-dish"></i> 探索</button>
+    </div>
+    
+    <!-- VIP Modal -->
+    <div id="vipOverlay" class="vip-overlay">
+        <div class="vip-modal">
+            <div class="close-vip" onclick="VipManager.hideModal()">✕</div>
+            <h2><i class="fas fa-crown"></i> 开通 SVIP</h2>
+            <p>开通会员，解锁无损音质与海量曲库</p>
+            
+            <div class="vip-plans">
+                <div class="vip-plan" onclick="VipManager.selectPlan(0)">
+                    <span class="plan-name">月卡 (30天)</span>
+                    <span class="plan-price">188</span>
+                </div>
+                <div class="vip-plan selected" onclick="VipManager.selectPlan(1)">
+                    <span class="plan-name">季卡 (90天)</span>
+                    <span class="plan-price">888</span>
+                </div>
+                <div class="vip-plan" onclick="VipManager.selectPlan(2)">
+                    <span class="plan-name">年卡 (365天)</span>
+                    <span class="plan-price">1888</span>
+                </div>
+            </div>
+            
+            <button class="pay-btn" onclick="VipManager.pay()">立即支付</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.7/jsmediatags.min.js"></script>
+<script>
+    // --- VIP Manager ---
+    const VipManager = {
+        key: 'lzc_svip_expiry',
+        plans: [
+            { id: 0, name: '月卡', price: 188, days: 30 },
+            { id: 1, name: '季卡', price: 888, days: 90 },
+            { id: 2, name: '年卡', price: 1888, days: 365 }
+        ],
+        selectedPlanIdx: 1,
+        payWindow: null,
+
+        init: () => {
+            VipManager.checkStatus();
+            // 监听支付回调
+            window.addEventListener('message', (e) => {
+                if (e.data && e.data.action === 'UPB_PAY_SUCCESS') {
+                    VipManager.onPaySuccess(e.data.token);
+                }
+            });
+        },
+
+        checkStatus: () => {
+            const expiry = localStorage.getItem(VipManager.key);
+            const now = Date.now();
+            const tag = document.getElementById('vipTag');
+            const text = document.getElementById('vipStatusText');
+            
+            if (expiry && parseInt(expiry) > now) {
+                // 是 VIP
+                tag.classList.add('active');
+                const date = new Date(parseInt(expiry));
+                text.innerText = `尊贵的 SVIP 用户，有效期至 ${date.toLocaleDateString()}`;
+                return true;
+            } else {
+                // 不是 VIP
+                tag.classList.remove('active');
+                text.innerText = "未开通 SVIP，无法播放音乐";
+                return false;
+            }
+        },
+
+        showModal: () => document.getElementById('vipOverlay').classList.add('show'),
+        hideModal: () => document.getElementById('vipOverlay').classList.remove('show'),
+
+        selectPlan: (idx) => {
+            VipManager.selectedPlanIdx = idx;
+            document.querySelectorAll('.vip-plan').forEach((el, i) => {
+                if (i === idx) el.classList.add('selected');
+                else el.classList.remove('selected');
+            });
+        },
+
+        pay: () => {
+            const plan = VipManager.plans[VipManager.selectedPlanIdx];
+            // 打开钱包页面 (假设 wallet.html 在同一目录下)
+            VipManager.payWindow = window.open('index.html', 'upb_wallet');
+            
+            if (!VipManager.payWindow) {
+                alert("请允许弹出窗口以进行支付");
+                return;
+            }
+
+            // 发送支付请求
+            setTimeout(() => {
+                VipManager.payWindow.postMessage({
+                    action: 'UPB_PAY_REQ',
+                    amount: plan.price,
+                    note: `购买音乐播放器 SVIP ${plan.name}`
+                }, '*');
+            }, 2000);
+        },
+
+        onPaySuccess: (token) => {
+            if (VipManager.payWindow) VipManager.payWindow.close();
+            
+            // 简单模拟后端验签后发货
+            const plan = VipManager.plans[VipManager.selectedPlanIdx];
+            const now = Date.now();
+            let currentExpiry = parseInt(localStorage.getItem(VipManager.key) || 0);
+            if (currentExpiry < now) currentExpiry = now;
+            
+            const newExpiry = currentExpiry + (plan.days * 24 * 60 * 60 * 1000);
+            localStorage.setItem(VipManager.key, newExpiry);
+            
+            VipManager.hideModal();
+            VipManager.checkStatus();
+            alert(`支付成功！\n您已成功开通 SVIP ${plan.name}\n尽情享受音乐吧！`);
+            
+            // 自动播放暂停的音乐
+            if (state.pendingPlayIndex !== null) {
+                state.isOnlineMode ? findAndPlayOnlineSong(state.pendingPlayIndex) : playAudio(state.pendingPlayIndex);
+                state.pendingPlayIndex = null;
+            }
+        }
+    };
+
+    // --- Core Logic ---
+    const dom = {
+        playlist: document.getElementById('playlist'),
+        lyrics: document.getElementById('lyrics'),
+        audioPlayer: document.getElementById('audioPlayer'),
+        themeToggle: document.getElementById('checkbox'),
+        loadOnlineBtn: document.getElementById('loadOnlineBtn'),
+        fileInput: document.getElementById('fileInput'),
+        fileDropArea: document.getElementById('fileDropArea')
+    };
+    
+    const API = {
+        name: 'GD Studio API',
+        baseUrl: 'https://music-api.gdstudio.xyz/api.php',
+        getList: async () => {
+            const res = await fetch(`${API.baseUrl}?types=search&source=netease&name=热门&count=50`);
+            const data = await res.json();
+            return data.map(s => ({ id: s.id, name: s.name, artists: [{name: s.artist.join('/')}], source: s.source, lyric_id: s.lyric_id }));
+        },
+        getSongUrl: (s) => `${API.baseUrl}?types=url&id=${s.id}&source=${s.source}&br=320000`,
+        getLyric: (s) => `${API.baseUrl}?types=lyric&id=${s.lyric_id}&source=${s.source}`
+    };
+
+    const state = {
+        isOnlineMode: false,
+        audioFiles: [],
+        lyricsFiles: {},
+        onlineSongs: [],
+        currentTrackIndex: -1,
+        lyricsData: [],
+        currentLyricLine: -1,
+        pendingPlayIndex: null // 用于支付成功后恢复播放
+    };
+
+    window.addEventListener('load', () => {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') { document.body.classList.add('dark-mode'); dom.themeToggle.checked = true; }
+        dom.themeToggle.addEventListener('change', (e) => {
+            document.body.classList.toggle('dark-mode', e.target.checked);
+            localStorage.setItem('theme', e.target.checked ? 'dark' : 'light');
+        });
+
+        dom.loadOnlineBtn.addEventListener('click', exploreOnlineMusic);
+        dom.fileInput.addEventListener('change', (e) => processFiles(e.target.files));
+        dom.fileDropArea.addEventListener('click', () => dom.fileInput.click());
+        dom.fileDropArea.addEventListener('dragover', (e) => { e.preventDefault(); });
+        dom.fileDropArea.addEventListener('drop', (e) => { e.preventDefault(); processFiles(e.dataTransfer.files); });
+        
+        VipManager.init();
+    });
+
+    dom.audioPlayer.addEventListener('ended', playNext);
+    dom.audioPlayer.addEventListener('timeupdate', syncLyrics);
+
+    // --- Modified Play Logic with VIP Check ---
+    function checkVipAccess(index) {
+        if (VipManager.checkStatus()) return true;
+        state.pendingPlayIndex = index;
+        VipManager.showModal();
+        return false;
+    }
+
+    async function exploreOnlineMusic() {
+        if (!checkVipAccess(null)) return; // 探索也需要 VIP
+        
+        state.isOnlineMode = true;
+        dom.loadOnlineBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 加载中...';
+        try {
+            state.onlineSongs = await API.getList();
+            renderOnlinePlaylist();
+            if (state.onlineSongs.length > 0) findAndPlayOnlineSong(0);
+        } catch (e) {
+            dom.playlist.innerHTML = "<div>加载失败</div>";
+        } finally {
+            dom.loadOnlineBtn.innerHTML = '<i class="fas fa-satellite-dish"></i> 探索';
+        }
+    }
+
+    async function playOnlineSong(index) {
+        if (!checkVipAccess(index)) return;
+
+        state.isOnlineMode = true;
+        state.currentTrackIndex = index;
+        updatePlaylistHighlight();
+        resetLyrics();
+        
+        const song = state.onlineSongs[index];
+        dom.lyrics.innerHTML = `<div>加载中: ${song.name}</div>`;
+        
+        try {
+            const urlData = await fetch(API.getSongUrl(song)).then(r => r.json());
+            if (!urlData.url) throw new Error('No URL');
+            dom.audioPlayer.src = urlData.url.replace(/^http:/, 'https');
+            dom.audioPlayer.play();
+            
+            const lrcData = await fetch(API.getLyric(song)).then(r => r.json());
+            if (lrcData.lyric) displayLyrics(lrcData.lyric);
+        } catch (e) {
+            dom.lyrics.innerHTML = '<div>播放失败</div>';
+        }
+    }
+
+    function playAudio(index) {
+        if (!checkVipAccess(index)) return;
+
+        state.isOnlineMode = false;
+        state.currentTrackIndex = index;
+        updatePlaylistHighlight();
+        resetLyrics();
+        
+        const file = state.audioFiles[index];
+        dom.audioPlayer.src = URL.createObjectURL(file);
+        dom.audioPlayer.play();
+        loadLyricsForFile(file);
+    }
+
+    // --- Helper Functions (Standard) ---
+    function processFiles(files) {
+        if (!files.length) return;
+        state.isOnlineMode = false;
+        for (const f of files) {
+            const ext = f.name.split('.').pop().toLowerCase();
+            if (['mp3','wav','ogg','m4a','flac'].includes(ext)) state.audioFiles.push(f);
+            else if (['lrc','txt'].includes(ext)) state.lyricsFiles[f.name.replace('.'+ext,'')] = f;
+        }
+        renderLocalPlaylist();
+        if (state.audioFiles.length) playAudio(0);
+    }
+
+    function renderLocalPlaylist() {
+        dom.playlist.innerHTML = state.audioFiles.map((f,i) => 
+            `<div id="t-${i}" onclick="playAudio(${i})">${f.name}</div>`
+        ).join('') || "<div>请添加音乐</div>";
+    }
+
+    function renderOnlinePlaylist() {
+        dom.playlist.innerHTML = state.onlineSongs.map((s,i) => 
+            `<div id="t-${i}" onclick="findAndPlayOnlineSong(${i})">${s.name} - ${s.artists[0].name}</div>`
+        ).join('');
+    }
+
+    async function findAndPlayOnlineSong(idx) {
+        await playOnlineSong(idx); 
+    }
+
+    function updatePlaylistHighlight() {
+        document.querySelectorAll('.playlist div').forEach((el,i) => {
+            el.classList.toggle('current', i === state.currentTrackIndex);
+            if (i === state.currentTrackIndex) el.scrollIntoView({block:'center', behavior:'smooth'});
+        });
+    }
+
+    function playNext() {
+        const len = state.isOnlineMode ? state.onlineSongs.length : state.audioFiles.length;
+        if (state.currentTrackIndex < len - 1) {
+            const idx = state.currentTrackIndex + 1;
+            state.isOnlineMode ? findAndPlayOnlineSong(idx) : playAudio(idx);
+        }
+    }
+    
+    function playPrevious() {
+        if (state.currentTrackIndex > 0) {
+            const idx = state.currentTrackIndex - 1;
+            state.isOnlineMode ? findAndPlayOnlineSong(idx) : playAudio(idx);
+        }
+    }
+
+    function resetLyrics() {
+        state.lyricsData = []; state.currentLyricLine = -1;
+        dom.lyrics.innerHTML = '<div>...</div>';
+    }
+
+    function loadLyricsForFile(file) {
+        const base = file.name.substring(0, file.name.lastIndexOf('.'));
+        if (state.lyricsFiles[base]) {
+            const r = new FileReader();
+            r.onload = e => displayLyrics(e.target.result);
+            r.readAsText(state.lyricsFiles[base]);
+        } else {
+            jsmediatags.read(file, {
+                onSuccess: t => {
+                    const l = t.tags.USLT?.data || t.tags.lyrics;
+                    if(l) displayLyrics(l); else dom.lyrics.innerHTML='<div>无内嵌歌词</div>';
+                },
+                onError: () => dom.lyrics.innerHTML='<div>无歌词</div>'
+            });
+        }
+    }
+
+    function displayLyrics(text) {
+        const lines = text.split('\n');
+        const reg = /\[(\d{2}):(\d{2})[.:](\d{2,3})\]/;
+        state.lyricsData = lines.map(l => {
+            const m = reg.exec(l);
+            if (!m) return null;
+            return {
+                time: parseInt(m[1])*60 + parseInt(m[2]) + parseInt(m[3])/1000,
+                text: l.replace(reg, '').trim()
+            };
+        }).filter(x => x && x.text);
+        
+        dom.lyrics.innerHTML = state.lyricsData.map((l,i) => 
+            `<div id="l-${i}">${l.text}</div>`
+        ).join('');
+    }
+
+    function syncLyrics() {
+        if (!state.lyricsData.length) return;
+        const time = dom.audioPlayer.currentTime;
+        const idx = state.lyricsData.findIndex((l, i) => {
+            const next = state.lyricsData[i+1];
+            return time >= l.time && (!next || time < next.time);
+        });
+        
+        if (idx !== -1 && idx !== state.currentLyricLine) {
+            const prev = document.getElementById(`l-${state.currentLyricLine}`);
+            if (prev) prev.classList.remove('current');
+            const curr = document.getElementById(`l-${idx}`);
+            if (curr) {
+                curr.classList.add('current');
+                curr.scrollIntoView({behavior:'smooth', block:'center'});
+            }
+            state.currentLyricLine = idx;
+        }
+    }
+</script>
+</body>
+</html>
