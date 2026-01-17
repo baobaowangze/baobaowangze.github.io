@@ -1,755 +1,814 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="light">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Wallet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Music & Wallet Pro</title>
+    <!-- 引入字体和图标 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
     <style>
-        /* --- iOS Design System --- */
+        /* ==========================================================================
+           1. 音乐播放器样式 (完全保留原版)
+           ========================================================================== */
         :root {
-            --bg-base: #F2F2F7;
-            --bg-card: #FFFFFF;
-            --text-primary: #000000;
-            --text-secondary: rgba(60,60,67,0.6);
-            --separator: #C6C6C8;
-            --tint: #007AFF;
-            --green: #34C759;
-            --red: #FF3B30;
-            --key-bg: #FFFFFF;
-            --key-text: #000000;
-            --key-active: #E5E5EA;
-            --nav-bg: rgba(249, 249, 249, 0.85);
-            --safe-bottom: env(safe-area-inset-bottom);
+            --font-main: 'Noto Sans SC', 'Segoe UI', Arial, sans-serif;
+            --bg-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            --container-bg: rgba(255, 255, 255, 0.6);
+            --container-shadow: rgba(0, 0, 0, 0.1);
+            --backdrop-blur: 12px;
+            --text-color: #2c3e50;
+            --text-secondary-color: #7f8c8d;
+            --primary-color: #3498db;
+            --primary-color-dark: #2980b9;
+            --warning-color: #e74c3c;
+            --item-hover-bg: rgba(52, 152, 219, 0.1);
+            --item-current-bg: rgba(52, 152, 219, 0.2);
+            --item-current-text: var(--primary-color);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --lyrics-highlight-bg: rgba(46, 204, 113, 0.15);
+            --lyrics-highlight-text: #27ae60;
+            --lyrics-highlight-shadow: rgba(46, 204, 113, 0.2);
+            --component-bg: rgba(255, 255, 255, 0.5);
+            --gold: #d4b166;
         }
 
-        [data-theme="dark"] {
-            --bg-base: #000000;
-            --bg-card: #1C1C1E;
-            --text-primary: #FFFFFF;
-            --text-secondary: rgba(235,235,245,0.6);
-            --separator: #38383A;
-            --tint: #0A84FF;
-            --green: #30D158;
-            --red: #FF453A;
-            --key-bg: #323232;
-            --key-text: #FFFFFF;
-            --key-active: #5E5E5E;
-            --nav-bg: rgba(29, 29, 29, 0.85);
+        body.dark-mode {
+            --bg-gradient: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            --container-bg: rgba(30, 30, 30, 0.6);
+            --container-shadow: rgba(0, 0, 0, 0.3);
+            --text-color: #ecf0f1;
+            --text-secondary-color: #95a5a6;
+            --primary-color: #5dade2;
+            --primary-color-dark: #3498db;
+            --item-hover-bg: rgba(93, 173, 226, 0.1);
+            --item-current-bg: rgba(93, 173, 226, 0.2);
+            --border-color: rgba(255, 255, 255, 0.15);
+            --lyrics-highlight-bg: rgba(26, 188, 156, 0.15);
+            --lyrics-highlight-text: #1abc9c;
+            --component-bg: rgba(44, 44, 44, 0.5);
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        /* 基础重置 */
+        body { margin: 0; padding: 0; font-family: var(--font-main); height: 100vh; overflow: hidden; background-image: var(--bg-gradient); color: var(--text-color); transition: background 0.5s, color 0.5s; }
         
-        /* Input Reset */
-        input { 
-            user-select: text; caret-color: var(--tint);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-            color: var(--text-primary); background: transparent;
-        }
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; }
-
-        body {
-            margin: 0; padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
-            background-color: var(--bg-base); color: var(--text-primary);
-            height: 100vh; overflow: hidden; display: flex; justify-content: center;
+        /* 音乐容器 */
+        #music-app-container {
+            display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; padding: 20px; box-sizing: border-box;
         }
 
-        #app { width: 100%; max-width: 440px; height: 100%; position: relative; overflow: hidden; display: flex; flex-direction: column; background: var(--bg-base); }
-
-        /* Navigation */
-        .view {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; background: var(--bg-base);
-            transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-            z-index: 10;
+        .container {
+            background: var(--container-bg); backdrop-filter: blur(var(--backdrop-blur)); -webkit-backdrop-filter: blur(var(--backdrop-blur));
+            padding: 35px; border-radius: 24px; box-shadow: 0 15px 30px var(--container-shadow); border: 1px solid var(--border-color);
+            width: 100%; max-width: 850px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 20px; height: 90vh; max-height: 700px; position: relative;
         }
-        .view.active { transform: translateX(0); z-index: 20; }
+
+        /* 音乐播放器组件样式 */
+        .header { text-align: center; position: relative; }
+        .header h1 { margin: 0; font-size: 2.2em; font-weight: 700; color: var(--primary-color); letter-spacing: 1px; }
+        .header .warning { color: var(--text-secondary-color); font-size: 0.9em; margin-top: 10px; font-style: italic; }
+        .vip-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-left: 10px; vertical-align: middle; background: #ccc; color: #fff; cursor: pointer; transition: 0.3s; }
+        .vip-tag.active { background: linear-gradient(135deg, #d4b166, #bfa055); color: #000; box-shadow: 0 2px 10px rgba(212, 177, 102, 0.4); }
+        .file-input-area { background: var(--component-bg); border: 2px dashed var(--border-color); border-radius: 16px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; }
+        .file-input-area:hover { border-color: var(--primary-color); background: var(--item-hover-bg); }
+        .file-input-label { display: flex; flex-direction: column; align-items: center; color: var(--text-secondary-color); }
+        .file-input-label i { font-size: 2em; margin-bottom: 10px; color: var(--primary-color); }
+        .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; overflow: hidden; }
+        .playlist, .lyrics { background: var(--component-bg); border-radius: 16px; padding: 20px; border: 1px solid var(--border-color); height: 100%; overflow-y: auto; }
+        .playlist div { padding: 12px 15px; border-radius: 10px; transition: 0.2s; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .playlist div:hover { background-color: var(--item-hover-bg); transform: translateX(5px); }
+        .playlist .current { color: var(--item-current-text); font-weight: 500; background-color: var(--item-current-bg); }
+        .lyrics { text-align: center; font-size: 1.1em; line-height: 2.2; }
+        .lyrics .current { color: var(--lyrics-highlight-text); font-weight: 700; transform: scale(1.05); }
+        .controls { display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap; }
+        .controls button { background: var(--primary-color); color: white; border: none; border-radius: 50%; cursor: pointer; width: 50px; height: 50px; font-size: 1.2em; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .controls button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
+        .controls button#loadOnlineBtn { width: auto; border-radius: 25px; padding: 0 25px; }
+        .controls audio { flex-grow: 1; min-width: 300px; }
+        .theme-switch-wrapper { position: absolute; top: 0px; right: 0px; }
+        .theme-switch { display: inline-block; height: 24px; position: relative; width: 48px; }
+        .theme-switch input { display:none; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 24px; }
+        .slider:before { background-color: #fff; bottom: 3px; content: ""; height: 18px; left: 3px; position: absolute; transition: .4s; width: 18px; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        /* VIP Modal (Music Side) */
+        .vip-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; }
+        .vip-overlay.show { display: flex; animation: fadeIn 0.3s; }
+        .vip-modal { background: var(--component-bg); width: 90%; max-width: 400px; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid var(--border-color); position: relative; }
+        .vip-modal h2 { margin: 0 0 10px 0; color: var(--gold); font-size: 24px; }
+        .vip-plans { display: grid; gap: 15px; margin-bottom: 25px; }
+        .vip-plan { background: rgba(255,255,255,0.1); border: 2px solid var(--border-color); border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .vip-plan.selected { border-color: var(--gold); background: rgba(212, 177, 102, 0.2); transform: scale(1.02); }
+        .pay-btn { background: linear-gradient(135deg, #d4b166, #bfa055); color: #000; border: none; width: 100%; padding: 12px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .close-vip { position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 20px; opacity: 0.5; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ==========================================================================
+           2. 钱包层样式 (Wallet Overlay Styles)
+           ========================================================================== */
+        #wallet-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999;
+            background: #F2F2F7; color: #000;
+            display: none; /* 默认隐藏 */
+            font-family: -apple-system, sans-serif;
+        }
+        #wallet-layer[data-theme="dark"] { background: #000; color: #fff; }
+
+        /* Scoped Wallet Styles */
+        .w-wrapper { width: 100%; height: 100%; max-width: 440px; margin: 0 auto; position: relative; overflow: hidden; display: flex; flex-direction: column; background: inherit; }
+        .w-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background: inherit; transform: translateX(100%); transition: transform 0.4s; z-index: 10; }
+        .w-view.active { transform: translateX(0); z-index: 20; }
         
-        .nav-bar {
-            height: 44px; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 8px; font-weight: 600; font-size: 17px;
-            background: var(--nav-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border-bottom: 0.5px solid var(--separator);
-            position: absolute; top: 0; width: 100%; z-index: 50;
-        }
-        .nav-btn { font-size: 17px; color: var(--tint); background: transparent; border: none; padding: 10px; cursor: pointer; display: flex; align-items: center; }
-        .nav-btn:active { opacity: 0.5; }
-        .nav-btn.icon { font-size: 22px; }
+        .w-navbar { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); z-index: 50; }
+        #wallet-layer[data-theme="dark"] .w-navbar { background: rgba(30,30,30,0.8); }
+        .w-btn-link { color: #007AFF; cursor: pointer; background: none; border: none; font-size: 17px; }
         
-        .content {
-            flex: 1; overflow-y: auto; padding-top: 44px; padding-bottom: calc(20px + var(--safe-bottom));
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Lists */
-        .list-group { margin: 24px 16px; border-radius: 10px; background: var(--bg-card); overflow: hidden; }
-        .list-header { margin: 20px 16px 8px; font-size: 13px; color: var(--text-secondary); text-transform: uppercase; }
-        .list-item {
-            display: flex; align-items: center; padding: 12px 16px; min-height: 48px;
-            background: var(--bg-card); position: relative;
-        }
-        .list-item:not(:last-child)::after {
-            content: ''; position: absolute; bottom: 0; left: 16px; right: 0; height: 0.5px; background: var(--separator);
-        }
-        .item-label { width: 90px; font-size: 17px; }
-        .item-input { flex: 1; border: none; background: transparent; font-size: 17px; color: var(--text-primary); outline: none; padding: 0; }
-        .item-input::placeholder { color: var(--text-secondary); }
-        .item-arrow { color: var(--text-secondary); opacity: 0.5; font-size: 16px; font-weight: bold; }
-        .item-value { font-size: 17px; color: var(--text-secondary); }
-
-        /* Components */
-        .switch { position: relative; display: inline-block; width: 51px; height: 31px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #E9E9EA; transition: .4s; border-radius: 34px;
-        }
-        [data-theme="dark"] .slider { background-color: #39393D; }
-        .slider:before {
-            position: absolute; content: ""; height: 27px; width: 27px; left: 2px; bottom: 2px;
-            background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-        }
-        input:checked + .slider { background-color: var(--green); }
-        input:checked + .slider:before { transform: translateX(20px); }
-
-        .btn-primary {
-            display: block; width: calc(100% - 32px); margin: 24px 16px;
-            background-color: var(--tint); color: #fff;
-            padding: 14px; border-radius: 12px; border: none;
-            font-size: 17px; font-weight: 600; text-align: center; cursor: pointer;
-        }
-        .btn-primary:active { opacity: 0.7; }
-        .btn-text { color: var(--tint); font-size: 15px; text-align: center; margin-top: 10px; display: block; cursor: pointer; }
-
-        /* Wallet Card */
-        .wallet-card-container { margin: 20px 16px; perspective: 1000px; }
-        .wallet-card {
-            background: linear-gradient(135deg, #2C2C2E, #1C1C1E); color: #fff;
-            padding: 24px; border-radius: 16px; position: relative; overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.3s;
-        }
-        .wallet-card.vip {
-            background: linear-gradient(135deg, #000000, #1A1A1A);
-            border: 1px solid rgba(255,255,255,0.15);
-        }
-        .balance-group { text-align: center; margin: 20px 0; cursor: pointer; }
-        .balance-label { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
-        .balance-val { font-size: 40px; font-weight: 700; letter-spacing: -1px; }
+        .w-content { flex: 1; overflow-y: auto; padding: 20px 16px; }
+        .w-list { background: #fff; border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+        #wallet-layer[data-theme="dark"] .w-list { background: #1C1C1E; }
+        .w-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 0.5px solid #ccc; }
+        .w-input { border: none; background: transparent; flex: 1; font-size: 17px; outline: none; color: inherit; text-align: right; }
+        .w-btn-primary { display: block; width: 100%; padding: 14px; background: #007AFF; color: #fff; border: none; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; }
         
-        .card-num-row { display: flex; align-items: center; gap: 8px; opacity: 0.85; }
-        .card-copy-btn {
-            background: rgba(255,255,255,0.15); border: none; color: #fff;
-            width: 28px; height: 28px; border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 14px; cursor: pointer; backdrop-filter: blur(4px);
-        }
-        .card-copy-btn:active { background: rgba(255,255,255,0.3); }
-
-        /* Grid Menu */
-        .grid-menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 0 16px; }
-        .grid-item {
-            background: var(--bg-card); padding: 16px; border-radius: 12px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 90px;
-        }
-        .grid-item:active { background: var(--bg-base); }
-        .grid-icon { font-size: 28px; margin-bottom: 8px; }
-        .grid-text { font-size: 13px; font-weight: 500; }
-
-        /* Keypad & Sheet */
-        .sheet-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); z-index: 100;
-            opacity: 0; pointer-events: none; transition: 0.3s;
-        }
-        .sheet-overlay.show { opacity: 1; pointer-events: auto; }
+        .w-card-vis { background: linear-gradient(135deg, #2C2C2E, #1C1C1E); padding: 24px; border-radius: 16px; color: #fff; margin-bottom: 20px; }
+        .w-balance { font-size: 40px; font-weight: bold; margin: 10px 0; }
         
-        .sheet {
-            position: absolute; bottom: 0; left: 0; width: 100%;
-            background: var(--bg-card);
-            border-top-left-radius: 16px; border-top-right-radius: 16px;
-            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-            padding-bottom: var(--safe-bottom);
-        }
-        .sheet.show { transform: translateY(0); }
-        .sheet-header {
-            height: 50px; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 16px; border-bottom: 0.5px solid var(--separator);
-        }
+        /* Keypad */
+        .w-numpad { position: absolute; bottom: 0; width: 100%; background: #fff; border-radius: 20px 20px 0 0; transform: translateY(100%); transition: 0.3s; z-index: 100; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); }
+        #wallet-layer[data-theme="dark"] .w-numpad { background: #1C1C1E; }
+        .w-numpad.show { transform: translateY(0); }
+        .w-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 20px; }
+        .w-key { height: 60px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); cursor: pointer; color: #000; }
+        #wallet-layer[data-theme="dark"] .w-key { background: #323232; color: #fff; }
         
-        .pin-dots { display: flex; justify-content: center; gap: 16px; padding: 30px 0; }
-        .dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--text-secondary); transition: 0.2s; }
-        .dot.filled { background: var(--text-primary); border-color: var(--text-primary); }
-
-        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0 30px 30px; }
-        .key {
-            height: 70px; width: 70px; border-radius: 50%;
-            background: var(--key-bg); color: var(--key-text);
-            display: flex; align-items: center; justify-content: center; margin: 0 auto;
-            font-size: 28px; font-weight: 400; cursor: pointer;
-            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-        }
-        .key:active { background: var(--key-active); }
-        .key.blank { background: transparent; box-shadow: none; cursor: default; }
-
-        /* Toast & Admin */
-        .toast {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(40,40,40,0.9); backdrop-filter: blur(10px); color: #fff;
-            padding: 16px 24px; border-radius: 16px; font-size: 15px; z-index: 200;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        .god-trigger { position: absolute; top: 10px; right: 10px; opacity: 0; width: 30px; height: 30px; }
     </style>
 </head>
 <body>
-<div id="app">
 
-    <!-- 1. Login -->
-    <div id="view-auth" class="view active">
-        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding-bottom:100px;">
-            <div style="text-align:center; margin-bottom: 40px;">
-                <div style="width:80px; height:80px; background:var(--green); border-radius:18px; margin:0 auto 20px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:40px; box-shadow:0 10px 20px rgba(52,199,89,0.3);">¥</div>
-                <h1 style="font-size:28px; margin:0; font-weight:700;">Wallet</h1>
-                <p style="color:var(--text-secondary); font-size:15px; margin-top:8px;">安全支付系统</p>
+<!-- =======================================================================
+     APP 1: 音乐播放器 (主界面)
+     ======================================================================= -->
+<div id="music-app-container">
+    <div class="container">
+        <div class="header">
+            <div class="theme-switch-wrapper">
+                <label class="theme-switch"><input type="checkbox" id="checkbox" /><div class="slider"></div></label>
             </div>
-            
-            <div class="list-group">
-                <div class="list-item">
-                    <div class="item-label">账号</div>
-                    <input type="text" id="login-user" class="item-input" placeholder="用户名">
-                </div>
-                <div class="list-item">
-                    <div class="item-label">密码</div>
-                    <input type="password" id="login-pwd" class="item-input" placeholder="密码">
-                </div>
-            </div>
+            <h1>
+                Wu WangZe Music 
+                <span id="vipTag" class="vip-tag" onclick="VipManager.showModal()">SVIP</span>
+            </h1>
+            <div class="warning" id="vipStatusText">未开通 SVIP，仅可试听</div>
+        </div>
+        
+        <div class="file-input-area" id="fileDropArea">
+            <input type="file" id="fileInput" multiple accept="audio/*,.lrc,.txt" style="display: none;">
+            <label for="fileInput" class="file-input-label"><i class="fas fa-folder-plus"></i><span>本地音乐 / 拖拽上传</span></label>
+        </div>
+        
+        <div class="main-content">
+            <div class="playlist" id="playlist">请选择本地音乐或探索在线雷达</div>
+            <div class="lyrics" id="lyrics">歌词将在此处同步显示</div>
+        </div>
 
-            <button class="btn-primary" onclick="App.login()">登录</button>
-            <div class="btn-text" onclick="UI.nav('view-reg')">注册新账户</div>
+        <div class="controls">
+            <button onclick="playPrevious()"><i class="fas fa-backward-step"></i></button>
+            <audio id="audioPlayer" controls></audio>
+            <button onclick="playNext()"><i class="fas fa-forward-step"></i></button>
+            <button id="loadOnlineBtn" title="探索雷达"><i class="fas fa-satellite-dish"></i> 探索</button>
         </div>
-    </div>
-
-    <!-- 2. Register -->
-    <div id="view-reg" class="view">
-        <div class="nav-bar">
-            <button class="nav-btn" onclick="UI.back()">取消</button>
-            <span>注册</span>
-            <button class="nav-btn" style="font-weight:600" onclick="App.register()">完成</button>
-        </div>
-        <div class="content">
-            <div class="list-header">账户信息</div>
-            <div class="list-group">
-                <div class="list-item">
-                    <div class="item-label">用户名</div>
-                    <input type="text" id="reg-user" class="item-input" placeholder="设置用户名">
-                </div>
-                <div class="list-item">
-                    <div class="item-label">密码</div>
-                    <input type="password" id="reg-pwd" class="item-input" placeholder="设置密码">
-                </div>
-                <div class="list-item">
-                    <div class="item-label">确认</div>
-                    <input type="password" id="reg-pwd2" class="item-input" placeholder="再次输入密码">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. Home -->
-    <div id="view-home" class="view">
-        <div class="nav-bar" style="background:transparent; border:none; backdrop-filter:none;">
-            <div style="width:40px"></div>
-            <span style="opacity:0">钱包</span>
-            <button class="nav-btn icon" onclick="App.logout()">
-                <div style="width:28px;height:28px;background:#C7C7CC;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;">👤</div>
-            </button>
-        </div>
-        <div class="content" style="padding-top:10px;">
-            <div class="wallet-card-container">
-                <div class="wallet-card" id="card-el">
-                    <div class="god-trigger" onclick="Admin.edit()"></div>
-                    <div style="display:flex; justify-content:space-between; opacity:0.7; font-size:13px; font-weight:500;">
-                        <span>UPB CARD</span>
-                        <span>CNY</span>
+        
+        <!-- VIP Modal -->
+        <div id="vipOverlay" class="vip-overlay">
+            <div class="vip-modal">
+                <div class="close-vip" onclick="VipManager.hideModal()">✕</div>
+                <h2><i class="fas fa-crown"></i> 开通 SVIP</h2>
+                <p>开通会员，解锁无损音质与海量曲库</p>
+                <div class="vip-plans">
+                    <div class="vip-plan" onclick="VipManager.selectPlan(0)">
+                        <span class="plan-name">月卡 (30天)</span>
+                        <span class="plan-price" style="color:#d4b166;font-weight:bold">¥188</span>
                     </div>
-                    <div class="balance-group" onclick="UI.toggleEye()">
-                        <div class="balance-label" id="eye-txt">点击查看余额</div>
-                        <div class="balance-val" id="home-balance">****</div>
+                    <div class="vip-plan selected" onclick="VipManager.selectPlan(1)">
+                        <span class="plan-name">季卡 (90天)</span>
+                        <span class="plan-price" style="color:#d4b166;font-weight:bold">¥888</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:20px;">
-                        <div class="card-num-row">
-                            <span style="font-family:'Courier New', monospace; font-size:15px;" id="home-card">.... .... .... ....</span>
-                            <button class="card-copy-btn" onclick="UI.copyCard()">❐</button>
-                        </div>
-                        <div style="width:30px; height:30px; background:rgba(255,255,255,0.2); border-radius:50%;"></div>
+                    <div class="vip-plan" onclick="VipManager.selectPlan(2)">
+                        <span class="plan-name">年卡 (365天)</span>
+                        <span class="plan-price" style="color:#d4b166;font-weight:bold">¥1888</span>
                     </div>
                 </div>
-            </div>
-
-            <div class="grid-menu">
-                <div class="grid-item" onclick="UI.nav('view-pay')">
-                    <span class="grid-icon" style="color:var(--green)">💸</span>
-                    <span class="grid-text">转账</span>
-                </div>
-                <div class="grid-item" onclick="UI.nav('view-rec')">
-                    <span class="grid-icon" style="color:#FF9500">📥</span>
-                    <span class="grid-text">收款</span>
-                </div>
-                <div class="grid-item" onclick="UI.nav('view-bill')">
-                    <span class="grid-icon" style="color:var(--tint)">📄</span>
-                    <span class="grid-text">账单</span>
-                </div>
-                <div class="grid-item" onclick="UI.nav('view-set')">
-                    <span class="grid-icon" style="color:var(--text-secondary)">⚙️</span>
-                    <span class="grid-text">设置</span>
-                </div>
+                <button class="pay-btn" onclick="VipManager.pay()">立即支付</button>
             </div>
         </div>
     </div>
-
-    <!-- 4. Pay -->
-    <div id="view-pay" class="view">
-        <div class="nav-bar">
-            <button class="nav-btn" onclick="UI.back()">返回</button>
-            <span>转账</span>
-            <div style="width:40px"></div>
-        </div>
-        <div class="content">
-            <div style="text-align:center; padding: 30px 0;">
-                <div style="font-size:15px; color:var(--text-secondary);">金额</div>
-                <div style="font-size:40px; font-weight:600; margin-top:5px; display:flex; justify-content:center; align-items:center;">
-                    ¥ <input type="number" id="pay-amt" placeholder="0.00" style="width:200px; border:none; background:transparent; font-size:40px; font-weight:600; text-align:center; outline:none; color:var(--text-primary);">
-                </div>
-            </div>
-
-            <div class="list-group">
-                <div class="list-item">
-                    <div class="item-label">卡号</div>
-                    <input type="tel" id="pay-target" class="item-input" placeholder="收款人卡号 (必填)" oninput="UI.fmtCard(this)" maxlength="23">
-                </div>
-                <div class="list-item">
-                    <div class="item-label">备注</div>
-                    <input type="text" id="pay-note" class="item-input" placeholder="转账说明">
-                </div>
-            </div>
-
-            <button class="btn-primary" onclick="App.prePay()">下一步</button>
-        </div>
-    </div>
-
-    <!-- 5. Receive -->
-    <div id="view-rec" class="view">
-        <div class="nav-bar">
-            <button class="nav-btn" onclick="UI.back()">返回</button>
-            <span>收款</span>
-            <button class="nav-btn" onclick="App.redeem()" style="font-weight:600">确认</button>
-        </div>
-        <div class="content">
-            <div class="list-header">凭证代码</div>
-            <div class="list-group">
-                <div class="list-item" style="height:120px; align-items:flex-start;">
-                    <textarea id="rec-token" style="width:100%; height:100%; border:none; background:transparent; font-size:15px; resize:none; outline:none; color:var(--text-primary); font-family:monospace;" placeholder="粘贴 UPB- 开头的字符串..."></textarea>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 6. Settings -->
-    <div id="view-set" class="view">
-        <div class="nav-bar">
-            <button class="nav-btn" onclick="UI.back()">返回</button>
-            <span>设置</span>
-            <div style="width:40px"></div>
-        </div>
-        <div class="content">
-            <div class="list-group">
-                <div class="list-item" onclick="App.setupPin()">
-                    <div class="item-label" style="flex:1">支付密码</div>
-                    <div class="item-value" id="pin-status">未设置</div>
-                    <div class="item-arrow" style="margin-left:8px">›</div>
-                </div>
-            </div>
-
-            <div class="list-group">
-                <div class="list-item">
-                    <div class="item-label" style="flex:1">深色模式</div>
-                    <label class="switch">
-                        <input type="checkbox" id="theme-switch" onchange="UI.toggleTheme()">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="list-group">
-                <div class="list-item" onclick="App.logout()" style="justify-content:center;">
-                    <div style="color:var(--red); font-weight:500;">退出登录</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 7. Bill -->
-    <div id="view-bill" class="view">
-        <div class="nav-bar">
-            <button class="nav-btn" onclick="UI.back()">返回</button>
-            <span>账单</span>
-            <div style="width:40px"></div>
-        </div>
-        <div class="content" id="bill-list"></div>
-    </div>
-
-    <!-- Keypad Sheet -->
-    <div class="sheet-overlay" id="sheet-overlay">
-        <div class="sheet" id="sheet">
-            <div class="sheet-header">
-                <div style="width:40px"></div>
-                <div style="font-weight:600" id="kb-title">请输入密码</div>
-                <button class="nav-btn" onclick="Security.close()">取消</button>
-            </div>
-            <div class="pin-dots" id="pin-dots">
-                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-            </div>
-            <div class="numpad">
-                <div class="key" onclick="Security.tap(1)">1</div>
-                <div class="key" onclick="Security.tap(2)">2</div>
-                <div class="key" onclick="Security.tap(3)">3</div>
-                <div class="key" onclick="Security.tap(4)">4</div>
-                <div class="key" onclick="Security.tap(5)">5</div>
-                <div class="key" onclick="Security.tap(6)">6</div>
-                <div class="key" onclick="Security.tap(7)">7</div>
-                <div class="key" onclick="Security.tap(8)">8</div>
-                <div class="key" onclick="Security.tap(9)">9</div>
-                <div class="key blank"></div>
-                <div class="key" onclick="Security.tap(0)">0</div>
-                <div class="key blank" onclick="Security.tap('del')" style="font-size:22px">⌫</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Result View -->
-    <div id="view-result" class="view" style="z-index:100; background:rgba(0,0,0,0.6); backdrop-filter:blur(10px); justify-content:center; align-items:center;">
-        <div style="background:var(--bg-card); width:85%; border-radius:18px; padding:30px 20px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
-            <div style="width:60px; height:60px; background:var(--green); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; color:#fff; font-size:30px;">✓</div>
-            <h2 style="margin:0; font-size:20px;">支付成功</h2>
-            <p style="font-size:32px; font-weight:700; margin:10px 0;">- <span id="res-amt">0.00</span></p>
-            <div style="background:var(--bg-base); padding:12px; border-radius:10px; font-family:monospace; font-size:13px; word-break:break-all; margin:24px 0; color:var(--text-secondary);" id="res-token"></div>
-            <button class="btn-primary" style="margin:0; width:100%" onclick="UI.copyResult()">复制凭证</button>
-            <div class="btn-text" onclick="UI.closeResult()">关闭</div>
-        </div>
-    </div>
-
 </div>
 
+<!-- =======================================================================
+     APP 2: 钱包层 (默认隐藏，全屏覆盖)
+     ======================================================================= -->
+<div id="wallet-layer" data-theme="light">
+    <div class="w-wrapper">
+        <!-- 1. 登录页 -->
+        <div id="w-auth" class="w-view active">
+            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:30px;">
+                <div style="text-align:center; margin-bottom:40px;">
+                    <div style="font-size:60px; color:#34C759; margin-bottom:10px;">¥</div>
+                    <h1>Wallet</h1>
+                    <p style="opacity:0.6">安全支付系统</p>
+                </div>
+                <div class="w-list">
+                    <div class="w-item"><span>账号</span><input id="w-user" class="w-input" placeholder="用户名"></div>
+                    <div class="w-item"><span>密码</span><input id="w-pwd" type="password" class="w-input" placeholder="密码"></div>
+                </div>
+                <button class="w-btn-primary" onclick="WalletSystem.login()">登录</button>
+                <div style="text-align:center; margin-top:20px; color:#007AFF; cursor:pointer;" onclick="WalletUI.nav('w-reg')">注册账户</div>
+            </div>
+        </div>
+
+        <!-- 2. 注册页 -->
+        <div id="w-reg" class="w-view">
+            <div class="w-navbar"><button class="w-btn-link" onclick="WalletUI.back()">取消</button><strong>注册</strong><span></span></div>
+            <div class="w-content">
+                <div class="w-list">
+                    <div class="w-item"><span>用户名</span><input id="reg-u" class="w-input"></div>
+                    <div class="w-item"><span>密码</span><input id="reg-p" type="password" class="w-input"></div>
+                </div>
+                <button class="w-btn-primary" onclick="WalletSystem.register()">完成注册</button>
+            </div>
+        </div>
+
+        <!-- 3. 首页 -->
+        <div id="w-home" class="w-view">
+            <div class="w-navbar"><span></span><strong>钱包</strong><button class="w-btn-link" onclick="WalletSystem.logout()">退出</button></div>
+            <div class="w-content">
+                <div class="w-card-vis">
+                    <div>UPB CARD</div>
+                    <div class="w-balance" id="w-balance-val">****</div>
+                    <div id="w-card-num" style="font-family:monospace; opacity:0.8;">.... ....</div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div style="background:var(--bg-card); padding:20px; border-radius:10px; text-align:center; cursor:pointer;" onclick="WalletUI.nav('w-set')">⚙️ 设置</div>
+                    <div style="background:var(--bg-card); padding:20px; border-radius:10px; text-align:center; cursor:pointer;" onclick="Bridge.closeWallet()">↩️ 返回音乐</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 收银台 (SDK) -->
+        <div id="w-pay" class="w-view">
+            <div class="w-navbar"><button class="w-btn-link" onclick="Bridge.closeWallet()">取消支付</button><strong>收银台</strong><span></span></div>
+            <div class="w-content" style="text-align:center; padding-top:40px;">
+                <div style="opacity:0.6">支付金额</div>
+                <div style="font-size:40px; font-weight:bold; margin:10px 0;">¥ <span id="pay-amt-val">0.00</span></div>
+                <div class="w-list" style="margin-top:40px; text-align:left;">
+                    <div class="w-item"><span>收款方</span><span style="flex:1; text-align:right;">宇宙宙长</span></div>
+                    <div class="w-item"><span>说明</span><span id="pay-note-val" style="flex:1; text-align:right; opacity:0.6;">--</span></div>
+                </div>
+                <button class="w-btn-primary" onclick="WalletSystem.startPinFlow()">确认支付</button>
+            </div>
+        </div>
+        
+        <!-- 5. 设置 -->
+        <div id="w-set" class="w-view">
+            <div class="w-navbar"><button class="w-btn-link" onclick="WalletUI.back()">返回</button><strong>设置</strong><span></span></div>
+            <div class="w-content">
+                <div class="w-list">
+                    <div class="w-item" onclick="WalletSystem.setupPin()" style="cursor:pointer;">
+                        <span>支付密码</span>
+                        <span style="flex:1; text-align:right; opacity:0.6;" id="pin-status-val">未设置 ›</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 密码键盘 -->
+        <div id="w-numpad" class="w-numpad">
+            <div style="padding:15px; text-align:center; border-bottom:1px solid #eee; font-weight:bold;">输入支付密码</div>
+            <div class="pin-dots" style="display:flex; justify-content:center; gap:10px; padding:20px;">
+                <div class="dot" style="width:12px; height:12px; border-radius:50%; background:#ccc;"></div>
+                <div class="dot" style="width:12px; height:12px; border-radius:50%; background:#ccc;"></div>
+                <div class="dot" style="width:12px; height:12px; border-radius:50%; background:#ccc;"></div>
+                <div class="dot" style="width:12px; height:12px; border-radius:50%; background:#ccc;"></div>
+                <div class="dot" style="width:12px; height:12px; border-radius:50%; background:#ccc;"></div>
+                <div class="dot" style="width:12px; height:12px; border-radius:50%; background:#ccc;"></div>
+            </div>
+            <div class="w-keys">
+                <div class="w-key" onclick="WalletSystem.tap(1)">1</div><div class="w-key" onclick="WalletSystem.tap(2)">2</div><div class="w-key" onclick="WalletSystem.tap(3)">3</div>
+                <div class="w-key" onclick="WalletSystem.tap(4)">4</div><div class="w-key" onclick="WalletSystem.tap(5)">5</div><div class="w-key" onclick="WalletSystem.tap(6)">6</div>
+                <div class="w-key" onclick="WalletSystem.tap(7)">7</div><div class="w-key" onclick="WalletSystem.tap(8)">8</div><div class="w-key" onclick="WalletSystem.tap(9)">9</div>
+                <div class="w-key" style="background:transparent; box-shadow:none"></div><div class="w-key" onclick="WalletSystem.tap(0)">0</div><div class="w-key" onclick="WalletSystem.tap('del')">⬅</div>
+            </div>
+            <div style="text-align:center; padding-bottom:20px; color:#007AFF; cursor:pointer;" onclick="WalletSystem.closePin()">取消</div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.7/jsmediatags.min.js"></script>
 <script>
 /**
- * UPB Wallet v7.2 - Final Integration
+ * =========================================================
+ * 1. Bridge: 音乐播放器与钱包的连接桥梁
+ * =========================================================
  */
-const CONFIG = { GOD:'宇宙宙长', PASS:'wuwangze123', SALT:'UPB_V7_FINAL' };
-
-const DB = {
-    get: (k) => JSON.parse(localStorage.getItem(k)||'{}'),
-    set: (k,v) => localStorage.setItem(k, JSON.stringify(v)),
-    genCard: () => {
-        let c = "622202" + Math.floor(Math.random()*1e9).toString().padStart(9,'0');
-        let s=0; for(let i=0;i<c.length;i++) s+=parseInt(c[i]);
-        return (c+(s%10)).replace(/(.{4})/g,"$1 ").trim();
+const Bridge = {
+    openWalletForPay: (amount, note) => {
+        document.getElementById('wallet-layer').style.display = 'block';
+        WalletSystem.initPayment(amount, note);
+    },
+    paymentSuccess: () => {
+        document.getElementById('wallet-layer').style.display = 'none';
+        VipManager.onPaySuccess();
+    },
+    closeWallet: () => {
+        document.getElementById('wallet-layer').style.display = 'none';
     }
 };
 
-const Security = {
-    pin: [], cb: null,
-    hash: (s) => { let h=0x811c9dc5; for(let i=0;i<s.length;i++)h=Math.imul(h^s.charCodeAt(i),0x1000193); return (h>>>0).toString(16); },
-    token: (f,t,a,m) => {
-        const d = {f,t,a,ts:Date.now(),n:Math.random().toString(36).substr(2),m};
-        const j = JSON.stringify(d);
-        return "UPB-"+btoa(unescape(encodeURIComponent(j)))+"."+Security.hash(j+CONFIG.SALT);
-    },
-    verify: (s) => {
-        if(!s.startsWith("UPB-")) return {ok:false};
-        try {
-            const [b,g] = s.substring(4).split('.');
-            const j = decodeURIComponent(escape(atob(b)));
-            return Security.hash(j+CONFIG.SALT)===g ? {ok:true,d:JSON.parse(j)} : {ok:false};
-        } catch{return{ok:false};}
-    },
-    open: (t,cb) => {
-        document.getElementById('kb-title').innerText=t; Security.pin=[]; Security.cb=cb;
-        Security.render(); 
-        document.getElementById('sheet-overlay').classList.add('show');
-        document.getElementById('sheet').classList.add('show');
-    },
-    close: () => {
-        document.getElementById('sheet-overlay').classList.remove('show');
-        document.getElementById('sheet').classList.remove('show');
-    },
-    render: () => {
-        const dots = document.querySelectorAll('.dot');
-        dots.forEach((d,i) => {
-            if(i<Security.pin.length) d.classList.add('filled'); else d.classList.remove('filled');
-        });
-    },
-    tap: (v) => {
-        if(v==='del') Security.pin.pop(); else if(Security.pin.length<6) Security.pin.push(v);
-        Security.render();
-        if(Security.pin.length===6 && Security.cb) setTimeout(()=>Security.cb(Security.pin.join('')),100);
-    }
+/**
+ * =========================================================
+ * 2. Wallet System Logic (钱包逻辑)
+ * =========================================================
+ */
+const WalletDB = {
+    getUsers: () => JSON.parse(localStorage.getItem('upb_users')||'{}'),
+    saveUsers: (u) => localStorage.setItem('upb_users', JSON.stringify(u)),
+    getData: (c) => JSON.parse(localStorage.getItem('upb_data_'+c)),
+    saveData: (c, d) => localStorage.setItem('upb_data_'+c, JSON.stringify(d)),
+    genCard: () => "622202" + Math.floor(Math.random()*1e9).toString().padStart(9,'0')
 };
 
-const UI = {
-    stack: ['view-auth'],
+const WalletUI = {
+    stack: ['w-auth'],
     nav: (id) => {
-        document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+        document.querySelectorAll('.w-view').forEach(v => v.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        UI.stack.push(id);
-        if(id==='view-home') App.renderHome();
-        if(id==='view-bill') App.renderBill();
-        if(id==='view-set') App.renderSet();
+        WalletUI.stack.push(id);
+        if(id==='w-home') WalletSystem.renderHome();
+        if(id==='w-set') WalletSystem.renderSet();
     },
     back: () => {
-        if(UI.stack.length<=1) return;
-        UI.stack.pop();
-        const p = UI.stack[UI.stack.length-1];
-        document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+        if(WalletUI.stack.length<=1) return;
+        WalletUI.stack.pop();
+        const p = WalletUI.stack[WalletUI.stack.length-1];
+        document.querySelectorAll('.w-view').forEach(v => v.classList.remove('active'));
         document.getElementById(p).classList.add('active');
-        if(p==='view-home') App.renderHome();
-    },
-    toast: (m) => {
-        const d=document.createElement('div'); d.className='toast'; d.innerText=m;
-        document.body.appendChild(d); setTimeout(()=>d.remove(),2000);
-    },
-    toggleTheme: () => {
-        const el = document.documentElement;
-        const cur = el.getAttribute('data-theme');
-        const next = cur==='light'?'dark':'light';
-        el.setAttribute('data-theme', next);
-        localStorage.setItem('upb_theme', next);
-        document.getElementById('theme-switch').checked = (next==='dark');
-    },
-    toggleEye: () => {
-        const el = document.getElementById('home-balance');
-        const txt = document.getElementById('eye-txt');
-        const isHidden = el.innerText.includes('*');
-        el.innerText = isHidden ? App.fmt(App.wallet.balance) : "****";
-        txt.innerText = isHidden ? "隐藏余额" : "点击查看余额";
-    },
-    fmtCard: (e) => e.value = e.value.replace(/\D/g,'').substring(0,19).replace(/(\d{4})(?=\d)/g,"$1 "),
-    copyCard: () => {
-        const num = document.getElementById('home-card').innerText;
-        navigator.clipboard.writeText(num).then(() => UI.toast('卡号已复制'));
-    },
-    copyResult: () => { navigator.clipboard.writeText(document.getElementById('res-token').innerText).then(()=>UI.toast('已复制')); },
-    closeResult: () => { document.getElementById('view-result').classList.remove('active'); UI.back(); }
+    }
 };
 
-const App = {
-    u:null, c:null, wallet:null, isGod:false, sdkReq:null, pendingSdkReq:null,
-    fmt: (n) => parseFloat(n).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'),
-    
+const WalletSystem = {
+    user: null, card: null, wallet: null,
+    pendingReq: null, // 挂起的支付请求
+    pinBuffer: [], pinCb: null,
+
     init: () => {
-        const t = localStorage.getItem('upb_theme');
-        if(t) {
-            document.documentElement.setAttribute('data-theme', t);
-            document.getElementById('theme-switch').checked = (t==='dark');
+        const last = localStorage.getItem('upb_last');
+        if(last) document.getElementById('w-user').value = last;
+    },
+
+    // 外部调用入口
+    initPayment: (amount, note) => {
+        const req = { amount, note };
+        if(!WalletSystem.user) {
+            WalletSystem.pendingReq = req;
+            WalletUI.nav('w-auth'); // 强制登录
+            alert("请先登录钱包以支付");
+        } else {
+            WalletSystem.showPayUI(req);
         }
-        const u = localStorage.getItem('upb_last');
-        if(u) document.getElementById('login-user').value=u;
-        window.addEventListener("message", App.onMsg);
+    },
+
+    showPayUI: (req) => {
+        WalletUI.nav('w-pay');
+        document.getElementById('pay-amt-val').innerText = parseFloat(req.amount).toFixed(2);
+        document.getElementById('pay-note-val').innerText = req.note;
+        WalletSystem.pendingReq = req;
     },
 
     login: () => {
-        const u=document.getElementById('login-user').value.trim();
-        const p=document.getElementById('login-pwd').value;
-        const users=DB.get('upb_users');
-
-        if(u===CONFIG.GOD && p===CONFIG.PASS) {
-            App.isGod=true; App.setup(u, users[u]||App.mockGod(u));
-            UI.toast("欢迎归来，宇宙宙长");
+        const u = document.getElementById('w-user').value;
+        const p = document.getElementById('w-pwd').value;
+        
+        // God Mode
+        if(u === '宇宙宙长' && p === 'wuwangze123') {
+            WalletSystem.setupSession(u, {card: '8888888888888888'});
+            if(!WalletDB.getData('8888888888888888')) {
+                WalletDB.saveData('8888888888888888', {balance: 99999999, pin: '888888'});
+            }
             return;
         }
-        if(users[u] && users[u].pwd===p) {
-            App.isGod=false; App.setup(u, users[u]);
-        } else {
-            UI.toast("账号或密码错误");
-        }
-    },
-
-    setup: (u, data) => {
-        App.u=u; App.c=data.card;
-        App.wallet = DB.get('upb_data_'+App.c);
-        if(!App.wallet) return UI.toast("数据异常");
-        localStorage.setItem('upb_last', u);
-        UI.nav('view-home');
         
-        if(!App.wallet.pin) {
-            setTimeout(() => {
-                if(confirm("安全提示：您尚未设置支付密码，是否现在设置？")) UI.nav('view-set');
-            }, 500);
-        }
-
-        if (App.pendingSdkReq) {
-            setTimeout(() => {
-                UI.toast("处理之前的支付请求");
-                App.handleSdkReq(App.pendingSdkReq);
-                App.pendingSdkReq = null;
-            }, 500);
+        const users = WalletDB.getUsers();
+        if(users[u] && users[u].pwd === p) {
+            WalletSystem.setupSession(u, users[u]);
+        } else {
+            alert("账号或密码错误");
         }
     },
 
-    mockGod: (u) => {
-        const users=DB.get('upb_users');
-        const c="8888888888888888";
-        users[u]={pwd:CONFIG.PASS, card:c};
-        DB.set('upb_users', users);
-        DB.set('upb_data_'+c, {balance:99999999.99, pin:"888888", history:[], used:[]});
-        return users[u];
+    setupSession: (u, data) => {
+        WalletSystem.user = u;
+        WalletSystem.card = data.card;
+        WalletSystem.wallet = WalletDB.getData(data.card);
+        localStorage.setItem('upb_last', u);
+
+        if(!WalletSystem.wallet.pin) {
+            setTimeout(() => { if(confirm("未设置支付密码，去设置？")) WalletUI.nav('w-set'); }, 500);
+        }
+
+        if(WalletSystem.pendingReq) {
+            WalletSystem.showPayUI(WalletSystem.pendingReq);
+        } else {
+            WalletUI.nav('w-home');
+        }
     },
 
     register: () => {
-        const u=document.getElementById('reg-user').value.trim();
-        const p=document.getElementById('reg-pwd').value;
-        const p2=document.getElementById('reg-pwd2').value;
-        if(!u||!p) return UI.toast("请填写完整");
-        if(p!==p2) return UI.toast("密码不一致");
+        const u = document.getElementById('reg-u').value;
+        const p = document.getElementById('reg-p').value;
+        if(!u || !p) return alert("请填写完整");
+        const users = WalletDB.getUsers();
+        if(users[u]) return alert("用户已存在");
         
-        const users=DB.get('upb_users');
-        if(users[u]) return UI.toast("用户已存在");
-
-        const c=DB.genCard();
-        users[u]={pwd:p, card:c};
-        DB.set('upb_users', users);
-        DB.set('upb_data_'+c, {balance:0.00, pin:null, history:[{t:Date.now(), type:'账户开立', amt:0, note:'新用户注册'}], used:[]});
-        
-        UI.toast("注册成功");
-        document.getElementById('login-user').value=u;
-        document.getElementById('login-pwd').value=p;
-        UI.back();
+        const c = WalletDB.genCard();
+        users[u] = {pwd:p, card:c};
+        WalletDB.saveUsers(users);
+        WalletDB.saveData(c, {balance:0.00, pin:null});
+        alert("注册成功"); WalletUI.back();
     },
 
     logout: () => {
-        App.u=null; UI.stack=['view-auth'];
-        document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-        document.getElementById('view-auth').classList.add('active');
+        WalletSystem.user = null;
+        WalletUI.stack = ['w-auth'];
+        document.querySelectorAll('.w-view').forEach(v => v.classList.remove('active'));
+        document.getElementById('w-auth').classList.add('active');
     },
 
     renderHome: () => {
-        document.getElementById('home-card').innerText=App.c;
-        document.getElementById('home-balance').innerText="****";
-        document.getElementById('eye-txt').innerText="点击查看余额";
-        const el = document.getElementById('card-el');
-        if(App.wallet.balance>=1000000) el.classList.add('vip'); else el.classList.remove('vip');
-    },
-
-    renderBill: () => {
-        const l=App.wallet.history;
-        const el=document.getElementById('bill-list');
-        if(!l.length) { el.innerHTML='<div style="text-align:center;color:var(--text-secondary);margin-top:40px;">暂无记录</div>'; return; }
-        el.innerHTML = `<div class="list-group">` + l.map(h => `
-            <div class="list-item" style="justify-content:space-between;">
-                <div><div style="font-size:16px;">${h.note||h.type}</div><div style="font-size:12px;color:var(--text-secondary);">${new Date(h.t).toLocaleDateString()}</div></div>
-                <div style="font-weight:600;color:${h.amt>0?'var(--green)':'var(--text-primary)'}">${h.amt>0?'+':''}${App.fmt(h.amt)}</div>
-            </div>`).join('') + `</div>`;
+        document.getElementById('w-balance-val').innerText = "¥ " + WalletSystem.wallet.balance.toFixed(2);
+        document.getElementById('w-card-num').innerText = WalletSystem.card.replace(/(.{4})/g, "$1 ");
     },
 
     renderSet: () => {
-        const status = document.getElementById('pin-status');
-        status.innerText = App.wallet.pin ? "已设置" : "未设置";
-        status.style.color = App.wallet.pin ? "var(--text-secondary)" : "var(--red)";
+        const el = document.getElementById('pin-status-val');
+        el.innerText = WalletSystem.wallet.pin ? "已设置" : "未设置";
+        el.style.color = WalletSystem.wallet.pin ? "#999" : "red";
     },
 
+    // Pin Logic
     setupPin: () => {
-        Security.open("设置支付密码", (p)=>{
-            App.wallet.pin=p; DB.set('upb_data_'+App.c, App.wallet);
-            Security.close(); UI.toast("密码已设置"); App.renderSet();
+        WalletSystem.startPinFlow((pin) => {
+            WalletSystem.wallet.pin = pin;
+            WalletDB.saveData(WalletSystem.card, WalletSystem.wallet);
+            WalletSystem.closePin();
+            alert("密码设置成功");
+            WalletSystem.renderSet();
         });
     },
 
-    prePay: () => {
-        const amt=parseFloat(document.getElementById('pay-amt').value);
-        if(!amt||amt<=0) return UI.toast("金额无效");
-        if(amt>App.wallet.balance) return UI.toast("余额不足");
-        if(!App.wallet.pin) return UI.toast("请先设置支付密码");
+    startPinFlow: (cb) => {
+        // 如果是支付流程
+        if(!cb && WalletSystem.pendingReq) {
+            const amt = parseFloat(WalletSystem.pendingReq.amount);
+            if(amt > WalletSystem.wallet.balance) return alert("余额不足");
+            if(!WalletSystem.wallet.pin) return alert("请先设置支付密码");
+            
+            cb = (pin) => {
+                if(pin === WalletSystem.wallet.pin) {
+                    WalletSystem.wallet.balance -= amt;
+                    WalletDB.saveData(WalletSystem.card, WalletSystem.wallet);
+                    WalletSystem.closePin();
+                    WalletSystem.pendingReq = null;
+                    alert("支付成功");
+                    Bridge.paymentSuccess();
+                } else {
+                    alert("密码错误");
+                    WalletSystem.pinBuffer = [];
+                    WalletSystem.renderDots();
+                }
+            };
+        }
         
-        const target = document.getElementById('pay-target').value.replace(/\s/g,'');
-        if(!target || target.length < 16) return UI.toast("请输入有效的对方卡号");
+        WalletSystem.pinBuffer = [];
+        WalletSystem.pinCb = cb;
+        WalletSystem.renderDots();
+        document.getElementById('w-numpad').classList.add('show');
+    },
 
-        Security.open(`支付 ¥${amt}`, (p)=>{
-            if(p===App.wallet.pin) App.doPay(amt, target);
-            else { UI.toast("密码错误"); Security.pin=[]; Security.render(); }
+    closePin: () => document.getElementById('w-numpad').classList.remove('show'),
+
+    tap: (v) => {
+        if(v === 'del') WalletSystem.pinBuffer.pop();
+        else if(WalletSystem.pinBuffer.length < 6) WalletSystem.pinBuffer.push(v);
+        
+        WalletSystem.renderDots();
+        if(WalletSystem.pinBuffer.length === 6 && WalletSystem.pinCb) {
+            setTimeout(() => WalletSystem.pinCb(WalletSystem.pinBuffer.join('')), 100);
+        }
+    },
+
+    renderDots: () => {
+        const dots = document.querySelectorAll('.dot');
+        dots.forEach((d,i) => d.style.background = i < WalletSystem.pinBuffer.length ? '#000' : '#ccc');
+    }
+};
+WalletSystem.init();
+
+
+/**
+ * =========================================================
+ * 3. Music Player Logic (音乐播放器逻辑 - 完整保留)
+ * =========================================================
+ */
+const VipManager = {
+    key: 'lzc_svip_expiry',
+    plans: [
+        { id: 0, name: '月卡', price: 188, days: 30 },
+        { id: 1, name: '季卡', price: 888, days: 90 },
+        { id: 2, name: '年卡', price: 1888, days: 365 }
+    ],
+    selectedPlanIdx: 1,
+
+    init: () => {
+        VipManager.checkStatus();
+    },
+
+    checkStatus: () => {
+        const expiry = localStorage.getItem(VipManager.key);
+        const now = Date.now();
+        const tag = document.getElementById('vipTag');
+        const text = document.getElementById('vipStatusText');
+        
+        if (expiry && parseInt(expiry) > now) {
+            tag.classList.add('active');
+            const date = new Date(parseInt(expiry));
+            text.innerText = `尊贵的 SVIP 用户，有效期至 ${date.toLocaleDateString()}`;
+            return true;
+        } else {
+            tag.classList.remove('active');
+            text.innerText = "未开通 SVIP，无法播放音乐";
+            return false;
+        }
+    },
+
+    showModal: () => document.getElementById('vipOverlay').classList.add('show'),
+    hideModal: () => document.getElementById('vipOverlay').classList.remove('show'),
+
+    selectPlan: (idx) => {
+        VipManager.selectedPlanIdx = idx;
+        document.querySelectorAll('.vip-plan').forEach((el, i) => {
+            if (i === idx) el.classList.add('selected');
+            else el.classList.remove('selected');
         });
     },
 
-    doPay: (amt, target) => {
-        Security.close();
-        const note = document.getElementById('pay-note').value||'转账';
-        App.wallet.balance-=amt;
-        App.wallet.history.unshift({t:Date.now(), type:'转账支出', amt:-amt, note});
-        DB.set('upb_data_'+App.c, App.wallet);
+    pay: () => {
+        const plan = VipManager.plans[VipManager.selectedPlanIdx];
+        VipManager.hideModal();
+        // 调用 Bridge 打开钱包
+        Bridge.openWalletForPay(plan.price, `购买音乐播放器 SVIP ${plan.name}`);
+    },
+
+    onPaySuccess: () => {
+        const plan = VipManager.plans[VipManager.selectedPlanIdx];
+        const now = Date.now();
+        let currentExpiry = parseInt(localStorage.getItem(VipManager.key) || 0);
+        if (currentExpiry < now) currentExpiry = now;
         
-        const t = Security.token(App.c, target, amt, note);
+        const newExpiry = currentExpiry + (plan.days * 24 * 60 * 60 * 1000);
+        localStorage.setItem(VipManager.key, newExpiry);
         
-        // SDK Mode: Silent success & return
-        if(App.sdkReq) {
-            // TARGET ORIGIN IS '*' TO ALLOW LOCAL FILESYSTEM / CROSS-ORIGIN TESTING
-            App.sdkReq.s.postMessage({action:'UPB_PAY_SUCCESS', token:t}, '*');
-            App.sdkReq = null;
-            UI.toast("支付成功");
-            UI.nav('view-home');
-            return;
+        VipManager.checkStatus();
+        
+        // 自动播放暂停的音乐
+        if (state.pendingPlayIndex !== null) {
+            state.isOnlineMode ? findAndPlayOnlineSong(state.pendingPlayIndex) : playAudio(state.pendingPlayIndex);
+            state.pendingPlayIndex = null;
         }
-
-        // Normal Mode: Show Receipt
-        document.getElementById('res-amt').innerText = App.fmt(amt);
-        document.getElementById('res-token').innerText = t;
-        document.getElementById('view-result').classList.add('active');
-    },
-
-    redeem: () => {
-        const txt=document.getElementById('rec-token').value.trim();
-        if(!txt) return;
-        const res=Security.verify(txt);
-        if(!res.ok) return UI.toast("凭证无效");
-        const d=res.d;
-        if(App.wallet.used.includes(d.n)) return UI.toast("凭证已失效");
-        if(d.t && d.t.replace(/\s/g,'')!==App.c.replace(/\s/g,'')) return UI.toast("非指定收款人，无法收款");
-
-        App.wallet.balance+=parseFloat(d.a);
-        App.wallet.used.push(d.n);
-        App.wallet.history.unshift({t:Date.now(), type:'收款', amt:d.a, note:d.m||'收款'});
-        DB.set('upb_data_'+App.c, App.wallet);
-        UI.toast("收款成功"); UI.back();
-    },
-
-    onMsg: (e) => {
-        if(e.data?.action==='UPB_PAY_REQ') {
-            const req = { s: e.source, o: e.origin, data: e.data };
-            if (App.u) App.handleSdkReq(req);
-            else {
-                App.pendingSdkReq = req;
-                UI.toast("收到支付请求，请登录");
-            }
-        }
-    },
-
-    handleSdkReq: (req) => {
-        App.sdkReq = { s: req.s, o: req.o };
-        UI.nav('view-pay');
-        document.getElementById('pay-amt').value = req.data.amount;
-        document.getElementById('pay-note').value = req.data.note || "第三方支付";
-        // Auto-fill God Card as Merchant
-        document.getElementById('pay-target').value = "8888 8888 8888 8888"; 
     }
 };
 
-const Admin = { edit: () => {
-    const n=prompt("GOD MODE: SET BALANCE", App.wallet.balance);
-    if(n!==null&&!isNaN(n)) { App.wallet.balance=parseFloat(n); DB.set('upb_data_'+App.c, App.wallet); App.renderHome(); }
-}};
+const dom = {
+    playlist: document.getElementById('playlist'),
+    lyrics: document.getElementById('lyrics'),
+    audioPlayer: document.getElementById('audioPlayer'),
+    themeToggle: document.getElementById('checkbox'),
+    loadOnlineBtn: document.getElementById('loadOnlineBtn'),
+    fileInput: document.getElementById('fileInput'),
+    fileDropArea: document.getElementById('fileDropArea')
+};
 
-App.init();
+const API = {
+    name: 'GD Studio API',
+    baseUrl: 'https://music-api.gdstudio.xyz/api.php',
+    getList: async () => {
+        const res = await fetch(`${API.baseUrl}?types=search&source=netease&name=热门&count=50`);
+        const data = await res.json();
+        return data.map(s => ({ id: s.id, name: s.name, artists: [{name: s.artist.join('/')}], source: s.source, lyric_id: s.lyric_id }));
+    },
+    getSongUrl: (s) => `${API.baseUrl}?types=url&id=${s.id}&source=${s.source}&br=320000`,
+    getLyric: (s) => `${API.baseUrl}?types=lyric&id=${s.lyric_id}&source=${s.source}`
+};
+
+const state = {
+    isOnlineMode: false,
+    audioFiles: [],
+    lyricsFiles: {},
+    onlineSongs: [],
+    currentTrackIndex: -1,
+    lyricsData: [],
+    currentLyricLine: -1,
+    pendingPlayIndex: null
+};
+
+window.addEventListener('load', () => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') { document.body.classList.add('dark-mode'); dom.themeToggle.checked = true; }
+    dom.themeToggle.addEventListener('change', (e) => {
+        document.body.classList.toggle('dark-mode', e.target.checked);
+        localStorage.setItem('theme', e.target.checked ? 'dark' : 'light');
+    });
+
+    dom.loadOnlineBtn.addEventListener('click', exploreOnlineMusic);
+    dom.fileInput.addEventListener('change', (e) => processFiles(e.target.files));
+    dom.fileDropArea.addEventListener('click', () => dom.fileInput.click());
+    dom.fileDropArea.addEventListener('dragover', (e) => { e.preventDefault(); });
+    dom.fileDropArea.addEventListener('drop', (e) => { e.preventDefault(); processFiles(e.dataTransfer.files); });
+    
+    VipManager.init();
+});
+
+dom.audioPlayer.addEventListener('ended', playNext);
+dom.audioPlayer.addEventListener('timeupdate', syncLyrics);
+
+function checkVipAccess(index) {
+    if (VipManager.checkStatus()) return true;
+    state.pendingPlayIndex = index;
+    VipManager.showModal();
+    return false;
+}
+
+async function exploreOnlineMusic() {
+    if (!checkVipAccess(null)) return;
+    state.isOnlineMode = true;
+    dom.loadOnlineBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 加载中...';
+    try {
+        state.onlineSongs = await API.getList();
+        renderOnlinePlaylist();
+        if (state.onlineSongs.length > 0) findAndPlayOnlineSong(0);
+    } catch (e) {
+        dom.playlist.innerHTML = "<div>加载失败</div>";
+    } finally {
+        dom.loadOnlineBtn.innerHTML = '<i class="fas fa-satellite-dish"></i> 探索';
+    }
+}
+
+async function playOnlineSong(index) {
+    if (!checkVipAccess(index)) return;
+    state.isOnlineMode = true;
+    state.currentTrackIndex = index;
+    updatePlaylistHighlight();
+    resetLyrics();
+    
+    const song = state.onlineSongs[index];
+    dom.lyrics.innerHTML = `<div>加载中: ${song.name}</div>`;
+    
+    try {
+        const urlData = await fetch(API.getSongUrl(song)).then(r => r.json());
+        if (!urlData.url) throw new Error('No URL');
+        dom.audioPlayer.src = urlData.url.replace(/^http:/, 'https');
+        dom.audioPlayer.play();
+        
+        const lrcData = await fetch(API.getLyric(song)).then(r => r.json());
+        if (lrcData.lyric) displayLyrics(lrcData.lyric);
+    } catch (e) {
+        dom.lyrics.innerHTML = '<div>播放失败</div>';
+    }
+}
+
+function playAudio(index) {
+    if (!checkVipAccess(index)) return;
+    state.isOnlineMode = false;
+    state.currentTrackIndex = index;
+    updatePlaylistHighlight();
+    resetLyrics();
+    
+    const file = state.audioFiles[index];
+    dom.audioPlayer.src = URL.createObjectURL(file);
+    dom.audioPlayer.play();
+    loadLyricsForFile(file);
+}
+
+function processFiles(files) {
+    if (!files.length) return;
+    state.isOnlineMode = false;
+    for (const f of files) {
+        const ext = f.name.split('.').pop().toLowerCase();
+        if (['mp3','wav','ogg','m4a','flac'].includes(ext)) state.audioFiles.push(f);
+        else if (['lrc','txt'].includes(ext)) state.lyricsFiles[f.name.replace('.'+ext,'')] = f;
+    }
+    renderLocalPlaylist();
+    if (state.audioFiles.length) playAudio(0);
+}
+
+function renderLocalPlaylist() {
+    dom.playlist.innerHTML = state.audioFiles.map((f,i) => 
+        `<div id="t-${i}" onclick="playAudio(${i})">${f.name}</div>`
+    ).join('') || "<div>请添加音乐</div>";
+}
+
+function renderOnlinePlaylist() {
+    dom.playlist.innerHTML = state.onlineSongs.map((s,i) => 
+        `<div id="t-${i}" onclick="findAndPlayOnlineSong(${i})">${s.name} - ${s.artists[0].name}</div>`
+    ).join('');
+}
+
+async function findAndPlayOnlineSong(idx) { await playOnlineSong(idx); }
+
+function updatePlaylistHighlight() {
+    document.querySelectorAll('.playlist div').forEach((el,i) => {
+        el.classList.toggle('current', i === state.currentTrackIndex);
+        if (i === state.currentTrackIndex) el.scrollIntoView({block:'center', behavior:'smooth'});
+    });
+}
+
+function playNext() {
+    const len = state.isOnlineMode ? state.onlineSongs.length : state.audioFiles.length;
+    if (state.currentTrackIndex < len - 1) {
+        const idx = state.currentTrackIndex + 1;
+        state.isOnlineMode ? findAndPlayOnlineSong(idx) : playAudio(idx);
+    }
+}
+
+function playPrevious() {
+    if (state.currentTrackIndex > 0) {
+        const idx = state.currentTrackIndex - 1;
+        state.isOnlineMode ? findAndPlayOnlineSong(idx) : playAudio(idx);
+    }
+}
+
+function resetLyrics() {
+    state.lyricsData = []; state.currentLyricLine = -1;
+    dom.lyrics.innerHTML = '<div>...</div>';
+}
+
+function loadLyricsForFile(file) {
+    const base = file.name.substring(0, file.name.lastIndexOf('.'));
+    if (state.lyricsFiles[base]) {
+        const r = new FileReader();
+        r.onload = e => displayLyrics(e.target.result);
+        r.readAsText(state.lyricsFiles[base]);
+    } else {
+        jsmediatags.read(file, {
+            onSuccess: t => {
+                const l = t.tags.USLT?.data || t.tags.lyrics;
+                if(l) displayLyrics(l); else dom.lyrics.innerHTML='<div>无内嵌歌词</div>';
+            },
+            onError: () => dom.lyrics.innerHTML='<div>无歌词</div>'
+        });
+    }
+}
+
+function displayLyrics(text) {
+    const lines = text.split('\n');
+    const reg = /\[(\d{2}):(\d{2})[.:](\d{2,3})\]/;
+    state.lyricsData = lines.map(l => {
+        const m = reg.exec(l);
+        if (!m) return null;
+        return {
+            time: parseInt(m[1])*60 + parseInt(m[2]) + parseInt(m[3])/1000,
+            text: l.replace(reg, '').trim()
+        };
+    }).filter(x => x && x.text);
+    
+    dom.lyrics.innerHTML = state.lyricsData.map((l,i) => 
+        `<div id="l-${i}">${l.text}</div>`
+    ).join('');
+}
+
+function syncLyrics() {
+    if (!state.lyricsData.length) return;
+    const time = dom.audioPlayer.currentTime;
+    const idx = state.lyricsData.findIndex((l, i) => {
+        const next = state.lyricsData[i+1];
+        return time >= l.time && (!next || time < next.time);
+    });
+    
+    if (idx !== -1 && idx !== state.currentLyricLine) {
+        const prev = document.getElementById(`l-${state.currentLyricLine}`);
+        if (prev) prev.classList.remove('current');
+        const curr = document.getElementById(`l-${idx}`);
+        if (curr) {
+            curr.classList.add('current');
+            curr.scrollIntoView({behavior:'smooth', block:'center'});
+        }
+        state.currentLyricLine = idx;
+    }
+}
 </script>
 </body>
 </html>
